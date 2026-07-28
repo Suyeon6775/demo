@@ -2,309 +2,352 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
-    <title>Paradox of Translation</title>
-    <link rel="stylesheet" href="mobile.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ALT — Display</title>
+    <link rel="stylesheet" href="display.css" />
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <!-- 메인 메뉴 -->
-    <div class="screen" id="screen-menu">
-      <div class="menu-header">
-        <div class="menu-logo">Paradox of Translation</div>
-        <div class="menu-sub">이미지를 번역합니다</div>
-      </div>
-      <div class="menu-items">
-        <div class="menu-item primary" id="btn-scan">
-          <div class="menu-item-left">
-            <span class="menu-item-num">01</span>
-            <span class="menu-item-name">읽기</span>
-            <span class="menu-item-desc">이미지를 스캔합니다</span>
-          </div>
-          <span class="menu-arrow">→</span>
-        </div>
-        <div class="menu-item disabled" id="btn-loss">
-          <div class="menu-item-left">
-            <span class="menu-item-num">02</span>
-            <span class="menu-item-name">지우기</span>
-            <span class="menu-item-desc">손실을 조절합니다</span>
-          </div>
-          <span class="menu-arrow">→</span>
-        </div>
-        <div class="menu-item" id="btn-archive">
-          <div class="menu-item-left">
-            <span class="menu-item-num">03</span>
-            <span class="menu-item-name">아카이브</span>
-            <span class="menu-item-desc">모든 스캔 결과를 봅니다</span>
-          </div>
-          <span class="menu-arrow">→</span>
-        </div>
-      </div>
+    <!-- IDLE -->
+    <div id="screen-idle">
+      <div class="idle-title">Paradox of Translation</div>
+      <div class="idle-archive" id="idle-archive"></div>
     </div>
 
-    <!-- 읽기 -->
-    <div class="screen hidden" id="screen-scan">
-      <div class="screen-header">
-        <button class="back-btn" onclick="goMenu()">← 메뉴</button>
-        <span class="screen-title">읽기</span>
-        <div style="width: 48px"></div>
-      </div>
-      <div class="camera-wrap">
-        <video id="webcam" autoplay playsinline muted></video>
-        <div class="camera-overlay camera-corners"></div>
-      </div>
-      <div class="capture-btn-wrap">
-        <button class="capture-btn" id="capture-btn">스캔</button>
-      </div>
-      <canvas id="capture-canvas"></canvas>
+    <!-- SCANNING -->
+    <div id="screen-scanning" class="hidden">
+      <!-- <span class="scan-label">읽는 중</span> -->
+      <canvas id="scan-canvas"></canvas>
     </div>
 
-    <!-- 지우기 -->
-    <div class="screen hidden" id="screen-loss">
-      <div class="screen-header">
-        <button class="back-btn" onclick="goMenu()">← 메뉴</button>
-        <span class="screen-title">지우기</span>
-        <div style="width: 48px"></div>
-      </div>
-      <div class="loss-content">
-        <div class="loss-display">
-          <div class="loss-number" id="loss-number">0</div>
-          <div class="loss-bar-wrap">
-            <div class="loss-bar-fill" id="loss-bar" style="width: 0%"></div>
-          </div>
+    <!-- ORIGINAL REVEAL -->
+    <div id="original-reveal" class="hidden">
+      <span class="reveal-label">원본</span>
+      <img id="original-img" src="" alt="원본" />
+    </div>
+
+    <!-- RESULT -->
+    <div id="screen-result" class="hidden">
+      <div class="panel panel-a">
+        <div class="panel-label">LITERAL</div>
+        <p class="panel-text" id="text-a"></p>
+        <div class="panel-img-wrap">
+          <img id="img-a" src="" alt="" />
+          <div class="loss-overlay" id="loss-a"></div>
         </div>
-        <div class="loss-slider-wrap">
-          <div class="loss-slider-labels">
-            <span>원본</span>
-            <span>휘발</span>
-          </div>
-          <input type="range" id="loss-slider" min="0" max="100" value="0" />
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="panel panel-b">
+        <div class="panel-label">POETIC</div>
+        <p class="panel-text" id="text-b"></p>
+        <div class="panel-img-wrap">
+          <img id="img-b" src="" alt="" />
+          <div class="loss-overlay" id="loss-b"></div>
         </div>
       </div>
     </div>
 
-    <!-- 아카이브 목록 -->
-    <div class="screen hidden" id="screen-archive">
-      <div class="screen-header">
-        <button class="back-btn" onclick="exitArchive()">← 메뉴</button>
-        <span class="screen-title">아카이브</span>
-        <span
-          style="font-size: 10px; color: #888; letter-spacing: 0.1em"
-          id="archive-mobile-count"
-        ></span>
-      </div>
-      <div class="archive-grid" id="archive-mobile-grid"></div>
-    </div>
+    <!-- 깊이 인디케이터 -->
+    <div class="depth-indicator hidden" id="depth-indicator"></div>
 
-    <!-- 아카이브 상세 -->
-    <div class="screen hidden" id="screen-archive-detail">
-      <div class="screen-header">
-        <button class="back-btn" onclick="showScreen('screen-archive')">
-          ← 목록
-        </button>
-        <span class="screen-title">상세보기</span>
-        <div style="width: 48px"></div>
+    <!-- 아카이브 화면 -->
+    <div id="screen-archive" class="hidden">
+      <div class="archive-header">
+        <span class="archive-title">Archive</span>
+        <span class="archive-count" id="archive-count"></span>
       </div>
-      <div
-        style="
-          flex: 1;
-          overflow-y: auto;
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        "
-        id="archive-detail-content"
-      ></div>
-    </div>
-
-    <!-- 처리 중 오버레이 -->
-    <div id="overlay-processing" class="hidden">
-      <div class="processing-dots">
-        <div class="processing-dot"></div>
-        <div class="processing-dot"></div>
-        <div class="processing-dot"></div>
+      <div class="archive-grid" id="archive-grid"></div>
+      <div class="archive-detail hidden" id="archive-detail">
+        <div class="detail-panels">
+          <div class="detail-panel">
+            <div class="detail-label">원본</div>
+            <img class="detail-img" id="detail-original" src="" alt="" />
+          </div>
+          <div class="detail-panel">
+            <div class="detail-label">LITERAL</div>
+            <p class="detail-text" id="detail-text-a"></p>
+            <img class="detail-img" id="detail-img-a" src="" alt="" />
+          </div>
+          <div class="detail-panel">
+            <div class="detail-label">POETIC</div>
+            <p class="detail-text detail-text-poetic" id="detail-text-b"></p>
+            <img class="detail-img" id="detail-img-b" src="" alt="" />
+          </div>
+        </div>
       </div>
-      <span class="processing-text" id="processing-text">처리 중</span>
     </div>
 
     <script>
-      const socket = io({ query: { type: 'mobile' } });
-      let currentState = null;
-      let webcamStream = null;
-      let cachedScans = [];
+      const socket = io({ query: { type: 'display' } });
+
+      const screens = {
+        idle: document.getElementById('screen-idle'),
+        scanning: document.getElementById('screen-scanning'),
+        reveal: document.getElementById('original-reveal'),
+        result: document.getElementById('screen-result'),
+        archive: document.getElementById('screen-archive'),
+      };
+
+      function showOnly(name) {
+        Object.entries(screens).forEach(([k, el]) => {
+          el.classList.toggle('hidden', k !== name);
+        });
+      }
+
+      let revealTimer = null;
+      let lastSpokenScanId = null;
 
       socket.on('state', (state) => {
-        currentState = state;
-        cachedScans = state.scans || [];
-
-        const hasScan = state.currentScan !== null;
-        const btnLoss = document.getElementById('btn-loss');
-        if (btnLoss) btnLoss.classList.toggle('disabled', !hasScan);
-
-        if (state.mode === 'scanning') {
-          showProcessing('번역 중');
-        } else {
-          hideProcessing();
+        if (revealTimer) {
+          clearTimeout(revealTimer);
+          revealTimer = null;
         }
 
-        const slider = document.getElementById('loss-slider');
-        if (slider && Math.abs(parseInt(slider.value) - state.lossLevel) > 5) {
-          slider.value = state.lossLevel;
-          updateLossDisplay(state.lossLevel);
+        if (state.mode === 'archive') {
+          showOnly('archive');
+          renderArchiveGrid(state.scans);
+          document.getElementById('depth-indicator').classList.add('hidden');
+          return;
         }
-      });
 
-      function showScreen(id) {
-        document
-          .querySelectorAll('.screen')
-          .forEach((s) => s.classList.add('hidden'));
-        document.getElementById(id).classList.remove('hidden');
-      }
+        if (state.mode === 'idle') {
+          showOnly('idle');
+          updateArchive(state.scans);
+          window._currentScans = state.scans;
+          document.getElementById('depth-indicator').classList.add('hidden');
+        } else if (state.mode === 'scanning') {
+          if (state.currentScan?.originalDataUrl && state.depthLevel === 0) {
+            document.getElementById('original-img').src =
+              state.currentScan.originalDataUrl;
+            showOnly('reveal');
+            revealTimer = setTimeout(() => {
+              showOnly('scanning');
+              startScanAnim();
+            }, 3000);
+          } else {
+            showOnly('scanning');
+            startScanAnim();
+          }
+        } else if (state.mode === 'result') {
+          const scan = state.currentScan;
+          if (!scan) return;
 
-      function goMenu() {
-        showScreen('screen-menu');
-        stopWebcam();
-      }
+          const chain = scan.depthChain;
+          const current = chain[state.depthLevel] || chain[chain.length - 1];
 
-      // 읽기
-      document.getElementById('btn-scan').onclick = async () => {
-        showScreen('screen-scan');
-        await startWebcam();
-      };
+          document.getElementById('text-a').textContent = current.textA;
+          document.getElementById('text-b').textContent = current.textB;
+          if (current.imageA)
+            document.getElementById('img-a').src = current.imageA;
+          if (current.imageB)
+            document.getElementById('img-b').src = current.imageB;
 
-      async function startWebcam() {
-        try {
-          webcamStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'environment',
-              width: { ideal: 1280 },
-              height: { ideal: 960 },
-            },
-          });
-          document.getElementById('webcam').srcObject = webcamStream;
-        } catch (e) {
-          try {
-            webcamStream = await navigator.mediaDevices.getUserMedia({
-              video: true,
-            });
-            document.getElementById('webcam').srcObject = webcamStream;
-          } catch (e2) {
-            alert(
-              '카메라 접근이 거부되었습니다. 사파리 설정에서 카메라를 허용해주세요.',
-            );
+          const resultEl = document.getElementById('screen-result');
+          resultEl.className = '';
+          if (state.viewMode === 'literal')
+            resultEl.classList.add('view-literal');
+          if (state.viewMode === 'poetic')
+            resultEl.classList.add('view-poetic');
+
+          const lossOpacity = state.lossLevel / 100;
+          document.getElementById('loss-a').style.opacity = lossOpacity;
+          document.getElementById('loss-b').style.opacity = lossOpacity;
+
+          showOnly('result');
+          stopScanAnim();
+          window._currentScans = state.scans;
+
+          // 스크린리더 — 새 스캔일 때만 읽기
+          if (scan.id !== lastSpokenScanId) {
+            lastSpokenScanId = scan.id;
+            speak(current.textA, current.textB);
           }
         }
-      }
-
-      function stopWebcam() {
-        if (webcamStream) {
-          webcamStream.getTracks().forEach((t) => t.stop());
-          webcamStream = null;
-        }
-      }
-
-      document.getElementById('capture-btn').onclick = () => {
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('capture-canvas');
-        canvas.width = video.videoWidth || 1280;
-        canvas.height = video.videoHeight || 960;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-        const originalDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        const base64 = originalDataUrl.split(',')[1];
-        showProcessing('읽는 중');
-        socket.emit('scan', { base64, originalDataUrl });
-        stopWebcam();
-        goMenu();
-      };
-
-      // 지우기
-      document.getElementById('btn-loss').onclick = () => {
-        showScreen('screen-loss');
-      };
-
-      const lossSlider = document.getElementById('loss-slider');
-      lossSlider.addEventListener('input', () => {
-        const val = parseInt(lossSlider.value);
-        updateLossDisplay(val);
-        socket.emit('setLoss', val);
       });
 
-      function updateLossDisplay(val) {
-        document.getElementById('loss-number').textContent = val;
-        document.getElementById('loss-number').style.opacity =
-          0.05 + (val / 100) * 0.9;
-        document.getElementById('loss-bar').style.width = val + '%';
+      // 스크린리더
+      const synth = window.speechSynthesis;
+      let speechUnlocked = false;
+
+      document.addEventListener('click', () => {
+        if (!speechUnlocked) {
+          const u = new SpeechSynthesisUtterance('');
+          synth.speak(u);
+          speechUnlocked = true;
+        }
+      });
+
+      function speak(textA, textB) {
+        synth.cancel();
+
+        const uttA = new SpeechSynthesisUtterance(textA);
+        uttA.lang = 'ko-KR';
+        uttA.rate = 0.9;
+        uttA.pitch = 0.8;
+
+        const uttB = new SpeechSynthesisUtterance(textB);
+        uttB.lang = 'ko-KR';
+        uttB.rate = 0.75;
+        uttB.pitch = 0.7;
+
+        uttA.onend = () => {
+          setTimeout(() => synth.speak(uttB), 800);
+        };
+
+        synth.speak(uttA);
       }
 
-      // 아카이브
-      document.getElementById('btn-archive').onclick = () => {
-        socket.emit('showArchive');
-        const scans = currentState?.scans || cachedScans || [];
-        renderArchiveMobile(scans);
-        showScreen('screen-archive');
-      };
+      // ── 로딩 이미지 나열 애니메이션 ────────────────────────
+      let stackInterval = null;
+      let savedImageUrls = [];
 
-      function renderArchiveMobile(scans) {
-        const grid = document.getElementById('archive-mobile-grid');
-        const count = document.getElementById('archive-mobile-count');
+      async function loadSavedImages() {
+        try {
+          const res = await fetch('/api/saved-images');
+          savedImageUrls = await res.json();
+        } catch (e) {
+          savedImageUrls = [];
+        }
+      }
+      loadSavedImages();
+
+      function startScanAnim() {
+        const scanning = document.getElementById('screen-scanning');
+        const oldEl = document.getElementById('stack-container');
+        if (oldEl) oldEl.remove();
+
+        const cols = 6;
+        const cellSize = Math.ceil(window.innerWidth / cols);
+        const rows = Math.ceil(window.innerHeight / cellSize) + 1;
+        const total = cols * rows;
+
+        const container = document.createElement('div');
+        container.id = 'stack-container';
+        container.style.position = 'absolute';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = (cols * cellSize) + 'px';
+        container.style.height = (rows * cellSize) + 'px';
+        container.style.display = 'grid';
+        container.style.gridTemplateColumns = 'repeat(' + cols + ', ' + cellSize + 'px)';
+        container.style.gridTemplateRows = 'repeat(' + rows + ', ' + cellSize + 'px)';
+        container.style.pointerEvents = 'none';
+        scanning.appendChild(container);
+
+        const newScans = (window._currentScans || [])
+          .map(function(s) { return s.originalDataUrl || s.imageA; })
+          .filter(Boolean);
+        const shuffled = savedImageUrls.slice().sort(function() { return Math.random() - 0.5; });
+        const allImages = newScans.concat(shuffled).slice(0, total);
+
+        let idx = 0;
+        function addNext() {
+          if (idx >= allImages.length) {
+            clearInterval(stackInterval);
+            stackInterval = null;
+            return;
+          }
+          const src = allImages[idx++];
+          const img = document.createElement('img');
+          img.src = src;
+          img.style.width = cellSize + 'px';
+          img.style.height = cellSize + 'px';
+          img.style.objectFit = 'cover';
+          img.style.display = 'block';
+          img.style.opacity = '0';
+          img.style.transform = 'scale(0.85)';
+          img.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+          container.appendChild(img);
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              img.style.opacity = '1';
+              img.style.transform = 'scale(1)';
+            });
+          });
+        }
+
+        addNext();
+        stackInterval = setInterval(addNext, 250);
+      }
+
+      function stopScanAnim() {
+        if (stackInterval) {
+          clearInterval(stackInterval);
+          stackInterval = null;
+        }
+        const old = document.getElementById('stack-container');
+        if (old) old.remove();
+      }
+
+      // textReady는 이제 사용 안 함 (애니메이션 변경)
+      socket.on('textReady', () => {});
+
+      // 아카이브 그리드
+      function renderArchiveGrid(scans) {
+        const grid = document.getElementById('archive-grid');
+        const count = document.getElementById('archive-count');
         count.textContent = scans.length + '개';
         grid.innerHTML = '';
+        document.getElementById('archive-detail').classList.add('hidden');
         scans.forEach((scan) => {
           const item = document.createElement('div');
-          item.style.cssText =
-            'background:#fff;aspect-ratio:1;overflow:hidden;cursor:pointer;';
-          item.onclick = () => showArchiveDetail(scan);
+          item.className = 'archive-grid-item';
+          item.onclick = () => showDetail(scan);
           const img = document.createElement('img');
           img.src = scan.originalDataUrl || scan.imageA || '';
-          img.style.cssText =
-            'width:100%;height:100%;object-fit:cover;display:block;';
+          img.alt = '';
           item.appendChild(img);
           grid.appendChild(item);
         });
       }
 
-      function showArchiveDetail(scan) {
+      function showDetail(scan) {
         const chain = scan.depthChain?.[0] || scan;
-        const content = document.getElementById('archive-detail-content');
-        content.innerHTML = `
-          <div>
-            <div style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#888;margin-bottom:8px;">원본</div>
-            <img src="${scan.originalDataUrl || ''}" style="width:100%;display:block;">
-          </div>
-          <div>
-            <div style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#888;margin-bottom:8px;">LITERAL</div>
-            <p style="font-family:'Space Mono',monospace;font-size:12px;line-height:1.7;margin-bottom:12px;">${chain.textA || scan.textA || ''}</p>
-            <img src="${chain.imageA || scan.imageA || ''}" style="width:100%;display:block;">
-          </div>
-          <div>
-            <div style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#888;margin-bottom:8px;">POETIC</div>
-            <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:14px;line-height:1.7;margin-bottom:12px;">${chain.textB || scan.textB || ''}</p>
-            <img src="${chain.imageB || scan.imageB || ''}" style="width:100%;display:block;">
-          </div>
-        `;
-        showScreen('screen-archive-detail');
+        document.getElementById('detail-original').src =
+          scan.originalDataUrl || '';
+        document.getElementById('detail-text-a').textContent =
+          chain.textA || scan.textA || '';
+        document.getElementById('detail-text-b').textContent =
+          chain.textB || scan.textB || '';
+        document.getElementById('detail-img-a').src =
+          chain.imageA || scan.imageA || '';
+        document.getElementById('detail-img-b').src =
+          chain.imageB || scan.imageB || '';
+        document.getElementById('archive-detail').classList.remove('hidden');
       }
 
-      function exitArchive() {
-        socket.emit('exitArchive');
-        showScreen('screen-menu');
+      socket.on('selectArchive', (index) => {
+        const grid = document.getElementById('archive-grid');
+        const items = grid.querySelectorAll('.archive-grid-item');
+        if (items[index]) items[index].click();
+      });
+
+      function updateArchive(scans) {
+        const el = document.getElementById('idle-archive');
+        el.innerHTML = '';
+        scans.slice(0, 20).forEach((s) => {
+          if (s.imageB) {
+            const img = document.createElement('img');
+            img.className = 'archive-thumb';
+            img.src = s.imageB;
+            el.appendChild(img);
+          }
+        });
       }
 
-      // 처리 중
-      function showProcessing(text) {
-        document.getElementById('processing-text').textContent = text;
-        document
-          .getElementById('overlay-processing')
-          .classList.remove('hidden');
-      }
-
-      function hideProcessing() {
-        document.getElementById('overlay-processing').classList.add('hidden');
+      function updateArchiveStrip(scans) {
+        const el = document.getElementById('archive-strip');
+        el.innerHTML = '';
+        scans.slice(0, 30).forEach((s) => {
+          if (s.imageA) {
+            const img = document.createElement('img');
+            img.className = 'strip-item';
+            img.src = s.imageA;
+            el.appendChild(img);
+          }
+        });
       }
     </script>
   </body>
