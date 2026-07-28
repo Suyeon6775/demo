@@ -1,0 +1,399 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #fff;
+  --fg: #000;
+  --dim: #ccc;
+  --accent-a: #444;
+  --accent-b: #666;
+  --font-mono: 'Space Mono', monospace;
+  --font-serif: 'IM Fell English', serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+
+/* ── IDLE 화면 ─────────────────────────────── */
+#screen-idle {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  transition: opacity 0.8s;
+}
+
+.idle-title {
+  font-family: var(--font-serif);
+  font-size: 112px;
+  letter-spacing: 0.1rem;
+  color: var(--fg);
+
+  user-select: none;
+}
+
+.idle-archive {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 80vw;
+  padding: 0 40px;
+}
+
+.archive-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  opacity: 0.3;
+  filter: grayscale(1);
+  transition: opacity 0.3s;
+}
+
+/* ── SCANNING 화면 ─────────────────────────── */
+#screen-scanning {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.scan-line { display: none; }
+
+/* archive-strip 제거됨 */
+#archive-strip { display: none; }
+
+.scan-label {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── RESULT 화면 ───────────────────────────── */
+#screen-result {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  grid-template-rows: 1fr;
+  overflow: hidden;
+}
+
+.divider {
+  background: var(--dim);
+  opacity: 0.6;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 48px 40px;
+  overflow: hidden;
+  transition:
+    opacity 0.6s,
+    filter 0.6s;
+  position: relative;
+}
+
+.panel-label {
+  font-size: 24px;
+  /* letter-spacing: 0.2em; */
+  text-transform: uppercase;
+  color: #000;
+  margin-bottom: 24px;
+}
+
+.panel-text {
+  font-size: clamp(14px, 1.4vw, 18px);
+  line-height: 1.8;
+  margin-bottom: 16px;
+  transition: opacity 0.4s;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.panel-a .panel-text {
+  font-family: var(--font-mono);
+  color: var(--fg);
+  font-size: clamp(15px, 1.5vw, 20px);
+  letter-spacing: 0.02em;
+}
+
+.panel-b .panel-text {
+  font-family: var(--font-serif);
+  color: var(--fg);
+  font-size: clamp(15px, 1.5vw, 20px);
+}
+
+.panel-img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  position: relative;
+}
+
+.panel-img-wrap img {
+  width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.loss-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+#screen-result.view-literal .panel-b {
+  opacity: 0.08;
+  filter: blur(4px);
+}
+#screen-result.view-poetic .panel-a {
+  opacity: 0.08;
+  filter: blur(4px);
+}
+
+/* ── 깊이 표시 ─────────────────────────────── */
+
+/* ── 원본 이미지 reveal ──────────────────────── */
+#original-reveal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 20;
+}
+
+#original-reveal img {
+  max-width: 60vw;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+.reveal-label {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── 전환 ───────────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── 아카이브 스트립 ─────────────────────────── */
+#archive-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 8px;
+  overflow: hidden;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.8));
+  z-index: 5;
+}
+
+.strip-item {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  opacity: 0.25;
+  filter: grayscale(0.5);
+  transition: opacity 0.3s;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+}
+
+/* ── 스캔 애니메이션 캔버스 ─── */
+#scan-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ── 아카이브 화면 ─────────────────────────── */
+#screen-archive {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 50;
+}
+
+.archive-header {
+  padding: 32px 48px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  border-bottom: 1px solid var(--dim);
+  flex-shrink: 0;
+}
+
+.archive-title {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 4vw, 56px);
+  font-style: normal;
+  color: var(--fg);
+  letter-spacing: 0.1rem;
+}
+
+.archive-count {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.archive-grid {
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 0;
+  padding: 0;
+  background: #fff;
+}
+
+.archive-grid-item {
+  background: var(--bg);
+  aspect-ratio: 1;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.archive-grid-item:hover {
+  opacity: 0.8;
+}
+
+.archive-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.archive-detail {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: 1fr;
+  overflow: hidden;
+}
+
+.detail-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  height: 100%;
+}
+
+.detail-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 40px 32px;
+  border-right: 1px solid var(--dim);
+  overflow: hidden;
+  gap: 16px;
+}
+
+.detail-panel:last-child {
+  border-right: none;
+}
+
+.detail-label {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.detail-text {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1vw, 14px);
+  line-height: 1.7;
+  color: var(--fg);
+  flex-shrink: 0;
+}
+
+.detail-text-poetic {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(13px, 1.2vw, 17px);
+}
+
+.detail-img {
+  flex: 1;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  min-height: 0;
+}

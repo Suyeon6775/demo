@@ -1,0 +1,558 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #fff;
+  --fg: #000;
+  --dim: #ccc;
+  --mid: #888;
+  --font-mono: 'Space Mono', monospace;
+  --font-serif: 'IM Fell English', serif;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 공통 ────────────────────────── */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.screen.hidden {
+  display: none !important;
+}
+
+.screen-header {
+  padding: 24px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.back-btn {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mid);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  font-family: var(--font-mono);
+}
+
+.screen-title {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+/* ── 메인 메뉴 ───────────────────── */
+#screen-menu {
+  align-items: stretch;
+  justify-content: flex-start;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.menu-header {
+  padding: 48px 28px 24px;
+  flex: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.menu-logo {
+  font-family: var(--font-serif);
+  font-size: 52px;
+  color: var(--fg);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+
+.menu-sub {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.menu-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px;
+  border-top: 1px solid var(--dim);
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-item:last-child {
+  border-bottom: 1px solid var(--dim);
+}
+.menu-item:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.menu-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-item-num {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--mid);
+}
+
+.menu-item-name {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  color: var(--fg);
+}
+
+.menu-item-desc {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--mid);
+  margin-top: 2px;
+}
+
+.menu-arrow {
+  font-size: 18px;
+  color: var(--mid);
+}
+
+.menu-item.primary .menu-item-name {
+  color: var(--fg);
+}
+.menu-item.primary .menu-item-desc {
+  color: var(--mid);
+}
+
+.menu-item.disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── 읽기 화면 ───────────────────── */
+#screen-scan {
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 40px;
+}
+
+#screen-scan .screen-header {
+  width: 100%;
+}
+
+.camera-wrap {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+#webcam {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.camera-corners::before,
+.camera-corners::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--fg);
+  border-style: solid;
+  opacity: 0.5;
+}
+.camera-corners::before {
+  top: 20px;
+  left: 20px;
+  border-width: 1px 0 0 1px;
+}
+.camera-corners::after {
+  bottom: 20px;
+  right: 20px;
+  border-width: 0 1px 1px 0;
+}
+
+.capture-btn-wrap {
+  padding: 0 28px;
+  width: 100%;
+}
+
+.capture-btn {
+  width: 100%;
+  padding: 18px;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.capture-btn:active {
+  opacity: 0.7;
+}
+.capture-btn:disabled {
+  opacity: 0.3;
+}
+
+#capture-canvas {
+  display: none;
+}
+
+/* ── 잃기 화면 ───────────────────── */
+#screen-deepen {
+  padding: 0 0 40px;
+}
+
+.deepen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  gap: 32px;
+}
+
+.depth-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.depth-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.depth-chain {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.depth-node {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--mid);
+  transition: all 0.3s;
+}
+.depth-node.done {
+  border-color: var(--fg);
+  color: var(--fg);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.depth-arrow {
+  color: var(--mid);
+  font-size: 12px;
+}
+
+.current-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.current-text-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.current-text-a {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg);
+  opacity: 0.7;
+}
+
+.current-text-b {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--fg);
+  opacity: 0.7;
+}
+
+.deepen-btn {
+  margin: 0 28px;
+  padding: 18px;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.deepen-btn:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+.deepen-btn:disabled {
+  opacity: 0.3;
+}
+
+/* ── 고르기 화면 ─────────────────── */
+#screen-view {
+  padding: 0 0 40px;
+}
+
+.view-options {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  gap: 12px;
+  justify-content: center;
+}
+
+.view-option {
+  padding: 24px 20px;
+  border: 1px solid var(--dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.view-option:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+.view-option.selected {
+  border-color: var(--fg);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.view-option-name {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-style: italic;
+  color: var(--fg);
+}
+.view-option-desc {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--mid);
+}
+
+/* ── 지우기 화면 ─────────────────── */
+#screen-loss {
+  padding: 0 0 40px;
+}
+
+.loss-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  gap: 40px;
+  justify-content: center;
+}
+
+.loss-display {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.loss-number {
+  font-family: var(--font-serif);
+  font-size: 80px;
+  line-height: 1;
+  color: var(--fg);
+  opacity: 0.15;
+  transition: opacity 0.1s;
+  font-style: italic;
+}
+
+.loss-bar-wrap {
+  width: 100%;
+  height: 2px;
+  background: var(--dim);
+  position: relative;
+}
+
+.loss-bar-fill {
+  height: 100%;
+  background: var(--fg);
+  transition: width 0.05s;
+}
+
+.loss-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loss-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+input[type='range'] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 2px;
+  background: var(--dim);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--fg);
+  cursor: pointer;
+}
+
+/* mobile.css 에 추가/수정하세요 */
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3열로 설정 (모바일 환경 고려) */
+  gap: 0px; /* 빈 공간 제거 */
+  padding: 0px; /* 패딩 제거 */
+  width: 100%;
+}
+
+.archive-grid-item {
+  aspect-ratio: 1; /* 정사각형 비율 유지 */
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+}
+
+.archive-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 이미지가 찌그러지지 않고 셀을 꽉 채움 */
+  display: block;
+}
+
+/* ── 처리 중 오버레이 ─────────────── */
+#overlay-processing {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 100;
+}
+#overlay-processing.hidden {
+  display: none !important;
+}
+
+.processing-text {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mid);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.processing-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.processing-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--mid);
+  animation: dotpulse 1.2s ease-in-out infinite;
+}
+.processing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.processing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dotpulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
