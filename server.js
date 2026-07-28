@@ -4,15 +4,39 @@ const fs = require('fs');
 const path = require('path');
 const { Server } = require('socket.io');
 const cloudinary = require('cloudinary').v2;
+const { MongoClient } = require('mongodb');
 
 const API_KEY = process.env.OPENAI_API_KEY || '';
 const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+let db = null;
+let scansCollection = null;
+
+async function connectDB() {
+  try {
+    const client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    db = client.db('paradox');
+    scansCollection = db.collection('scans');
+    console.log('✅ MongoDB 연결 완료');
+    // 서버 시작 시 기존 스캔 불러오기
+    const saved = await scansCollection.find({}).sort({ id: -1 }).toArray();
+    exhibitionState.scans = saved;
+    if (saved.length > 0) {
+      exhibitionState.currentScan = saved[0];
+      exhibitionState.mode = 'result';
+    }
+  } catch (e) {
+    console.error('MongoDB 연결 실패:', e.message);
+  }
+}
 
 let exhibitionState = {
   mode: 'idle',
@@ -242,6 +266,10 @@ io.on('connection', (socket) => {
     exhibitionState.currentScan = scan;
     exhibitionState.scans.unshift(scan);
     exhibitionState.mode = 'result';
+    // MongoDB에 저장
+    if (scansCollection) {
+      scansCollection.insertOne({ ...scan }).catch(console.error);
+    }
     io.emit('state', exhibitionState);
   });
 
@@ -272,6 +300,8 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () =>
-  console.log(`✅ 서버 구동: http://localhost:${PORT}`),
-);
+connectDB().then(() => {
+  httpServer.listen(PORT, () =>
+    console.log(`✅ 서버 구동: http://localhost:${PORT}`),
+  );
+});
