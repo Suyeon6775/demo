@@ -51,14 +51,18 @@ let exhibitionState = {
 function uploadToCloudinary(base64Data, filename) {
   return new Promise((resolve, reject) => {
     const dataUri = `data:image/png;base64,${base64Data}`;
-    cloudinary.uploader.upload(dataUri, {
-      public_id: filename,
-      folder: 'paradox-of-translation',
-      overwrite: true,
-    }, (err, result) => {
-      if (err) reject(err);
-      else resolve(result.secure_url);
-    });
+    cloudinary.uploader.upload(
+      dataUri,
+      {
+        public_id: filename,
+        folder: 'paradox-of-translation',
+        overwrite: true,
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result.secure_url);
+      },
+    );
   });
 }
 
@@ -166,6 +170,7 @@ const httpServer = http.createServer((req, res) => {
     '.js': 'text/javascript',
     '.css': 'text/css',
     '.mp4': 'video/mp4',
+    '.svg': 'image/svg+xml', // 추가
   };
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -188,10 +193,13 @@ io.on('connection', (socket) => {
     exhibitionState.mode = 'scanning';
     io.emit('state', exhibitionState);
 
-    let textA = '', textB = '';
+    let textA = '',
+      textB = '';
     await new Promise((resolve) => {
       let done = 0;
-      const finish = () => { if (++done === 2) resolve(); };
+      const finish = () => {
+        if (++done === 2) resolve();
+      };
       callGPT(
         {
           model: 'gpt-4o',
@@ -199,29 +207,51 @@ io.on('connection', (socket) => {
             {
               role: 'user',
               content: [
-                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
-                { type: 'text', text: '이 이미지를 객관적으로 한 문장으로 묘사하세요. 피사체, 색상, 형태에 집중하세요. 감정 없이. 반드시 한국어로만.' },
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:image/jpeg;base64,${base64}` },
+                },
+                {
+                  type: 'text',
+                  text: '이 이미지를 객관적으로 한 문장으로 묘사하세요. 피사체, 색상, 형태에 집중하세요. 감정 없이. 반드시 한국어로만.',
+                },
               ],
             },
           ],
         },
-        (t) => { textA = t; finish(); },
+        (t) => {
+          textA = t;
+          finish();
+        },
       );
       callGPT(
         {
           model: 'gpt-4o',
           messages: [
-            { role: 'system', content: '당신은 한국어로만 글을 쓰는 시인입니다. 반드시 한국어로만 응답하세요. 영어 사용 절대 금지.' },
+            {
+              role: 'system',
+              content:
+                '당신은 한국어로만 글을 쓰는 시인입니다. 반드시 한국어로만 응답하세요. 영어 사용 절대 금지.',
+            },
             {
               role: 'user',
               content: [
-                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
-                { type: 'text', text: '이 이미지를 감각과 느낌으로 번역하세요. 2-3문장의 한국어 산문시로 작성하세요. 설명하지 말고 느낌으로만.' },
+                {
+                  type: 'image_url',
+                  image_url: { url: `data:image/jpeg;base64,${base64}` },
+                },
+                {
+                  type: 'text',
+                  text: '이 이미지를 감각과 느낌으로 번역하세요. 2-3문장의 한국어 산문시로 작성하세요. 설명하지 말고 느낌으로만.',
+                },
               ],
             },
           ],
         },
-        (t) => { textB = t; finish(); },
+        (t) => {
+          textB = t;
+          finish();
+        },
       );
     });
 

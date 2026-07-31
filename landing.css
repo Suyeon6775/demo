@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=IM+Fell+English:ital@0;1&family=Space+Mono:wght@400;700&display=swap');
 
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -69,19 +71,15 @@ body {
   pointer-events: none;
 }
 
-.title {
-  font-family: 'Henny Penny', serif;
-  font-size: clamp(40px, 4.8vw, 200px); /* 화면 너비에 맞게 조절 */
-  color: #fff;
-  letter-spacing: 0.1em;
-  text-align: center;
-  mix-blend-mode: difference;
+.title-img {
+  width: clamp(300px, 60vw, 2000px);
+  padding-bottom: 40px;
 }
 
 .subtitle {
   font-family: 'Space Mono', monospace;
   font-size: clamp(16px, 3.9vw, 200px); /* 화면 너비에 맞게 조절 */
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   text-align: center;
   padding: 0 4vw;
