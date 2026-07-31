@@ -112,6 +112,7 @@ body {
   grid-template-columns: 1fr 1px 1fr;
   grid-template-rows: 1fr;
   overflow: hidden;
+  background: #fff;
 }
 
 .divider {
@@ -299,7 +300,7 @@ body {
 }
 
 .archive-title-img {
-  height: clamp(32px, 4vw, 200px);
+  height: clamp(32px, 3.8vw, 200px);
   width: auto;
 }
 
