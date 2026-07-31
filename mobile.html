@@ -26,17 +26,9 @@
           </div>
           <span class="menu-arrow">→</span>
         </div>
-        <div class="menu-item disabled" id="btn-loss">
-          <div class="menu-item-left">
-            <span class="menu-item-num">02</span>
-            <span class="menu-item-name">지우기</span>
-            <span class="menu-item-desc">손실을 조절합니다</span>
-          </div>
-          <span class="menu-arrow">→</span>
-        </div>
         <div class="menu-item" id="btn-archive">
           <div class="menu-item-left">
-            <span class="menu-item-num">03</span>
+            <span class="menu-item-num">02</span>
             <span class="menu-item-name">아카이브</span>
             <span class="menu-item-desc">모든 스캔 결과를 봅니다</span>
           </div>
@@ -60,30 +52,6 @@
         <button class="capture-btn" id="capture-btn">스캔</button>
       </div>
       <canvas id="capture-canvas"></canvas>
-    </div>
-
-    <!-- 지우기 -->
-    <div class="screen hidden" id="screen-loss">
-      <div class="screen-header">
-        <button class="back-btn" onclick="goMenu()">← 메뉴</button>
-        <span class="screen-title">지우기</span>
-        <div style="width: 48px"></div>
-      </div>
-      <div class="loss-content">
-        <div class="loss-display">
-          <div class="loss-number" id="loss-number">0</div>
-          <div class="loss-bar-wrap">
-            <div class="loss-bar-fill" id="loss-bar" style="width: 0%"></div>
-          </div>
-        </div>
-        <div class="loss-slider-wrap">
-          <div class="loss-slider-labels">
-            <span>원본</span>
-            <span>휘발</span>
-          </div>
-          <input type="range" id="loss-slider" min="0" max="100" value="0" />
-        </div>
-      </div>
     </div>
 
     <!-- 아카이브 목록 -->
@@ -141,20 +109,10 @@
         currentState = state;
         cachedScans = state.scans || [];
 
-        const hasScan = state.currentScan !== null;
-        const btnLoss = document.getElementById('btn-loss');
-        if (btnLoss) btnLoss.classList.toggle('disabled', !hasScan);
-
         if (state.mode === 'scanning') {
           showProcessing('번역 중');
         } else {
           hideProcessing();
-        }
-
-        const slider = document.getElementById('loss-slider');
-        if (slider && Math.abs(parseInt(slider.value) - state.lossLevel) > 5) {
-          slider.value = state.lossLevel;
-          updateLossDisplay(state.lossLevel);
         }
       });
 
@@ -221,25 +179,6 @@
         stopWebcam();
         goMenu();
       };
-
-      // 지우기
-      document.getElementById('btn-loss').onclick = () => {
-        showScreen('screen-loss');
-      };
-
-      const lossSlider = document.getElementById('loss-slider');
-      lossSlider.addEventListener('input', () => {
-        const val = parseInt(lossSlider.value);
-        updateLossDisplay(val);
-        socket.emit('setLoss', val);
-      });
-
-      function updateLossDisplay(val) {
-        document.getElementById('loss-number').textContent = val;
-        document.getElementById('loss-number').style.opacity =
-          0.05 + (val / 100) * 0.9;
-        document.getElementById('loss-bar').style.width = val + '%';
-      }
 
       // 아카이브
       document.getElementById('btn-archive').onclick = () => {
