@@ -63,14 +63,14 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding-top: 390px;
+  justify-content: center;   /* 고정 padding-top 대신 화면 중앙 */
+  gap: 2vh;
   pointer-events: none;
 }
 
 .title {
   font-family: 'Henny Penny', serif;
-  font-size: 120px;
+  font-size: clamp(40px, 8vw, 130px);  /* 화면 너비에 맞게 조절 */
   color: #fff;
   letter-spacing: 0.1em;
   text-align: center;
@@ -79,11 +79,11 @@ body {
 
 .subtitle {
   font-family: 'Space Mono', monospace;
-  font-size: 90px;
+  font-size: clamp(16px, 4.5vw, 80px);  /* 화면 너비에 맞게 조절 */
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   text-align: center;
-  padding: 0 40px;
+  padding: 0 4vw;
   line-height: 1.2;
   letter-spacing: 0.1em;
 }
@@ -93,7 +93,7 @@ body {
   position: fixed;
   z-index: 10;
   font-family: 'Space Mono', monospace;
-  font-size: 11px;
+  font-size: clamp(9px, 0.9vw, 14px);
   color: rgba(255, 255, 255, 0.8);
   letter-spacing: 0.05em;
   line-height: 1.9;
@@ -101,21 +101,21 @@ body {
 }
 
 .top-right {
-  font-size: 18px;
-  top: 40px;
-  right: 48px;
+  font-size: clamp(11px, 1.1vw, 18px);
+  top: 3vh;
+  right: 3vw;
   text-align: right;
   line-height: 1.7;
 }
 
 .bottom-left-1 {
-  font-size: 16px;
-  bottom: 40px;
-  left: 48px;
+  font-size: clamp(11px, 1.1vw, 16px);
+  bottom: 3vh;
+  left: 3vw;
 }
 
 .bottom-left-2 {
-  font-size: 16px;
-  bottom: 40px;
-  left: 520px;
+  font-size: clamp(11px, 1.1vw, 16px);
+  bottom: 3vh;
+  left: 28vw;   /* 고정 520px 대신 뷰포트 기준 */
 }
