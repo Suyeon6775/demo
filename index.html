@@ -3,20 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ALT — Display</title>
+    <title>Paradox of Translation</title>
     <link rel="stylesheet" href="display.css" />
+    <link rel="stylesheet" href="landing.css" />
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-    <!-- IDLE -->
+
+    <!-- IDLE: 랜딩 페이지 -->
     <div id="screen-idle">
-      <div class="idle-title">Paradox of Translation</div>
-      <div class="idle-archive" id="idle-archive"></div>
+      <div id="grid"></div>
+
+      <div id="overlay">
+        <div class="title">Paradox of Translation</div>
+        <div class="subtitle">
+          Exploring the Gap Between <br />Alt&#8209;Text and Media
+        </div>
+      </div>
+
+      <div class="float-text top-right">
+        이미지는 언어로 번역되며 소실되고,<br />
+        언어는 이미지로 복원되며 변형된다.
+      </div>
+      <div class="float-text bottom-left-1">
+        대체 텍스트 기반 매체 간 간극 탐구
+      </div>
+      <div class="float-text bottom-left-2">
+        이미지와 언어 사이의 필연적 손실과 변질
+      </div>
     </div>
 
     <!-- SCANNING -->
     <div id="screen-scanning" class="hidden">
-      <!-- <span class="scan-label">읽는 중</span> -->
       <canvas id="scan-canvas"></canvas>
     </div>
 
@@ -80,6 +98,68 @@
     </div>
 
     <script>
+      // ── 랜딩 비디오 그리드 ────────────────────────────────────
+      const COLS = 5;
+      const ROWS = 5;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const tileW = W / COLS;
+      const tileH = H / ROWS;
+
+      const grid = document.getElementById('grid');
+      grid.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+      grid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+
+      const BASE_VIDEO = '7022026_Adult_Attractive_1280x720.mp4';
+      const OTHER_VIDEOS = [
+        '7185613_Chocolate_Hot_Chocolate_1280x720.mp4',
+        '7188296_Plant_Meadowsweet_1280x720.mp4',
+      ];
+      const ALL_VIDEOS = [BASE_VIDEO, ...OTHER_VIDEOS];
+
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          const tile = document.createElement('div');
+          tile.className = 'tile';
+
+          ALL_VIDEOS.forEach((src, i) => {
+            const vid = document.createElement('video');
+            vid.src = src;
+            vid.autoplay = true;
+            vid.loop = true;
+            vid.muted = true;
+            vid.playsInline = true;
+            vid.style.position = 'absolute';
+            vid.style.width = '100vw';
+            vid.style.height = '100vh';
+            vid.style.left = -col * tileW + 'px';
+            vid.style.top = -row * tileH + 'px';
+            vid.style.objectFit = 'cover';
+            vid.style.transition = 'opacity 0.8s ease';
+            vid.style.opacity = i === 0 ? '0.3' : '0';
+            tile.appendChild(vid);
+          });
+
+          grid.appendChild(tile);
+
+          function scheduledSwitch() {
+            const vids = tile.querySelectorAll('video');
+            const otherIdx = 1 + Math.floor(Math.random() * OTHER_VIDEOS.length);
+            vids[0].style.opacity = '0';
+            vids[otherIdx].style.opacity = '0.3';
+            const hold = 1000 + Math.random() * 2000;
+            setTimeout(() => {
+              vids[otherIdx].style.opacity = '0';
+              vids[0].style.opacity = '0.3';
+              const next = 1500 + Math.random() * 3500;
+              setTimeout(scheduledSwitch, next);
+            }, hold);
+          }
+          setTimeout(scheduledSwitch, Math.random() * 5000);
+        }
+      }
+
+      // ── Socket.IO 디스플레이 ──────────────────────────────────
       const socket = io({ query: { type: 'display' } });
 
       const screens = {
@@ -114,13 +194,11 @@
 
         if (state.mode === 'idle') {
           showOnly('idle');
-          updateArchive(state.scans);
           window._currentScans = state.scans;
           document.getElementById('depth-indicator').classList.add('hidden');
         } else if (state.mode === 'scanning') {
           if (state.currentScan?.originalDataUrl && state.depthLevel === 0) {
-            document.getElementById('original-img').src =
-              state.currentScan.originalDataUrl;
+            document.getElementById('original-img').src = state.currentScan.originalDataUrl;
             showOnly('reveal');
             revealTimer = setTimeout(() => {
               showOnly('scanning');
@@ -139,17 +217,13 @@
 
           document.getElementById('text-a').textContent = current.textA;
           document.getElementById('text-b').textContent = current.textB;
-          if (current.imageA)
-            document.getElementById('img-a').src = current.imageA;
-          if (current.imageB)
-            document.getElementById('img-b').src = current.imageB;
+          if (current.imageA) document.getElementById('img-a').src = current.imageA;
+          if (current.imageB) document.getElementById('img-b').src = current.imageB;
 
           const resultEl = document.getElementById('screen-result');
           resultEl.className = '';
-          if (state.viewMode === 'literal')
-            resultEl.classList.add('view-literal');
-          if (state.viewMode === 'poetic')
-            resultEl.classList.add('view-poetic');
+          if (state.viewMode === 'literal') resultEl.classList.add('view-literal');
+          if (state.viewMode === 'poetic') resultEl.classList.add('view-poetic');
 
           const lossOpacity = state.lossLevel / 100;
           document.getElementById('loss-a').style.opacity = lossOpacity;
@@ -159,7 +233,6 @@
           stopScanAnim();
           window._currentScans = state.scans;
 
-          // 스크린리더 — 새 스캔일 때만 읽기
           if (scan.id !== lastSpokenScanId) {
             lastSpokenScanId = scan.id;
             speak(current.textA, current.textB);
@@ -167,7 +240,7 @@
         }
       });
 
-      // 스크린리더
+      // ── 스크린리더 ────────────────────────────────────────────
       const synth = window.speechSynthesis;
       let speechUnlocked = false;
 
@@ -181,25 +254,15 @@
 
       function speak(textA, textB) {
         synth.cancel();
-
         const uttA = new SpeechSynthesisUtterance(textA);
-        uttA.lang = 'ko-KR';
-        uttA.rate = 0.9;
-        uttA.pitch = 0.8;
-
+        uttA.lang = 'ko-KR'; uttA.rate = 0.9; uttA.pitch = 0.8;
         const uttB = new SpeechSynthesisUtterance(textB);
-        uttB.lang = 'ko-KR';
-        uttB.rate = 0.75;
-        uttB.pitch = 0.7;
-
-        uttA.onend = () => {
-          setTimeout(() => synth.speak(uttB), 800);
-        };
-
+        uttB.lang = 'ko-KR'; uttB.rate = 0.75; uttB.pitch = 0.7;
+        uttA.onend = () => setTimeout(() => synth.speak(uttB), 800);
         synth.speak(uttA);
       }
 
-      // ── 로딩 이미지 나열 애니메이션 ────────────────────────
+      // ── 스캔 애니메이션 ───────────────────────────────────────
       let stackInterval = null;
       let savedImageUrls = [];
 
@@ -225,66 +288,38 @@
 
         const container = document.createElement('div');
         container.id = 'stack-container';
-        container.style.position = 'absolute';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.width = (cols * cellSize) + 'px';
-        container.style.height = (rows * cellSize) + 'px';
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(' + cols + ', ' + cellSize + 'px)';
-        container.style.gridTemplateRows = 'repeat(' + rows + ', ' + cellSize + 'px)';
-        container.style.pointerEvents = 'none';
+        container.style.cssText = `position:absolute;top:0;left:0;width:${cols*cellSize}px;height:${rows*cellSize}px;display:grid;grid-template-columns:repeat(${cols},${cellSize}px);grid-template-rows:repeat(${rows},${cellSize}px);pointer-events:none`;
         scanning.appendChild(container);
 
-        const newScans = (window._currentScans || [])
-          .map(function(s) { return s.originalDataUrl || s.imageA; })
-          .filter(Boolean);
-        const shuffled = savedImageUrls.slice().sort(function() { return Math.random() - 0.5; });
+        const newScans = (window._currentScans || []).map(s => s.originalDataUrl || s.imageA).filter(Boolean);
+        const shuffled = savedImageUrls.slice().sort(() => Math.random() - 0.5);
         const allImages = newScans.concat(shuffled).slice(0, total);
 
         let idx = 0;
         function addNext() {
-          if (idx >= allImages.length) {
-            clearInterval(stackInterval);
-            stackInterval = null;
-            return;
-          }
-          const src = allImages[idx++];
+          if (idx >= allImages.length) { clearInterval(stackInterval); stackInterval = null; return; }
           const img = document.createElement('img');
-          img.src = src;
-          img.style.width = cellSize + 'px';
-          img.style.height = cellSize + 'px';
-          img.style.objectFit = 'cover';
-          img.style.display = 'block';
-          img.style.opacity = '0';
-          img.style.transform = 'scale(0.85)';
-          img.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.22,1,0.36,1)';
+          img.src = allImages[idx++];
+          img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;opacity:0;transform:scale(0.85);transition:opacity 0.3s ease,transform 0.3s cubic-bezier(0.22,1,0.36,1)`;
           container.appendChild(img);
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              img.style.opacity = '1';
-              img.style.transform = 'scale(1)';
-            });
-          });
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            img.style.opacity = '1';
+            img.style.transform = 'scale(1)';
+          }));
         }
-
         addNext();
         stackInterval = setInterval(addNext, 250);
       }
 
       function stopScanAnim() {
-        if (stackInterval) {
-          clearInterval(stackInterval);
-          stackInterval = null;
-        }
+        if (stackInterval) { clearInterval(stackInterval); stackInterval = null; }
         const old = document.getElementById('stack-container');
         if (old) old.remove();
       }
 
-      // textReady는 이제 사용 안 함 (애니메이션 변경)
       socket.on('textReady', () => {});
 
-      // 아카이브 그리드
+      // ── 아카이브 ──────────────────────────────────────────────
       function renderArchiveGrid(scans) {
         const grid = document.getElementById('archive-grid');
         const count = document.getElementById('archive-count');
@@ -305,16 +340,11 @@
 
       function showDetail(scan) {
         const chain = scan.depthChain?.[0] || scan;
-        document.getElementById('detail-original').src =
-          scan.originalDataUrl || '';
-        document.getElementById('detail-text-a').textContent =
-          chain.textA || scan.textA || '';
-        document.getElementById('detail-text-b').textContent =
-          chain.textB || scan.textB || '';
-        document.getElementById('detail-img-a').src =
-          chain.imageA || scan.imageA || '';
-        document.getElementById('detail-img-b').src =
-          chain.imageB || scan.imageB || '';
+        document.getElementById('detail-original').src = scan.originalDataUrl || '';
+        document.getElementById('detail-text-a').textContent = chain.textA || scan.textA || '';
+        document.getElementById('detail-text-b').textContent = chain.textB || scan.textB || '';
+        document.getElementById('detail-img-a').src = chain.imageA || scan.imageA || '';
+        document.getElementById('detail-img-b').src = chain.imageB || scan.imageB || '';
         document.getElementById('archive-detail').classList.remove('hidden');
       }
 
@@ -323,32 +353,6 @@
         const items = grid.querySelectorAll('.archive-grid-item');
         if (items[index]) items[index].click();
       });
-
-      function updateArchive(scans) {
-        const el = document.getElementById('idle-archive');
-        el.innerHTML = '';
-        scans.slice(0, 20).forEach((s) => {
-          if (s.imageB) {
-            const img = document.createElement('img');
-            img.className = 'archive-thumb';
-            img.src = s.imageB;
-            el.appendChild(img);
-          }
-        });
-      }
-
-      function updateArchiveStrip(scans) {
-        const el = document.getElementById('archive-strip');
-        el.innerHTML = '';
-        scans.slice(0, 30).forEach((s) => {
-          if (s.imageA) {
-            const img = document.createElement('img');
-            img.className = 'strip-item';
-            img.src = s.imageA;
-            el.appendChild(img);
-          }
-        });
-      }
     </script>
   </body>
 </html>

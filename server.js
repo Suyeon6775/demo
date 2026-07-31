@@ -3,13 +3,39 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Server } = require('socket.io');
+const cloudinary = require('cloudinary').v2;
+const { MongoClient } = require('mongodb');
 
 const API_KEY = process.env.OPENAI_API_KEY || '';
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const MONGODB_URI = process.env.MONGODB_URI || '';
 
-const IMAGES_DIR = path.join(__dirname, 'saved_images');
-if (!fs.existsSync(IMAGES_DIR)) {
-  fs.mkdirSync(IMAGES_DIR, { recursive: true });
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+let db = null;
+let scansCollection = null;
+
+async function connectDB() {
+  try {
+    const client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    db = client.db('paradox');
+    scansCollection = db.collection('scans');
+    console.log('✅ MongoDB 연결 완료');
+    // 서버 시작 시 기존 스캔 불러오기
+    const saved = await scansCollection.find({}).sort({ id: -1 }).toArray();
+    exhibitionState.scans = saved;
+    if (saved.length > 0) {
+      exhibitionState.currentScan = saved[0];
+      exhibitionState.mode = 'result';
+    }
+  } catch (e) {
+    console.error('MongoDB 연결 실패:', e.message);
+  }
 }
 
 let exhibitionState = {
@@ -21,8 +47,23 @@ let exhibitionState = {
   scans: [],
 };
 
-// 이미지 생성 로직 (프롬프트 강화)
-function generateAndSave(reqBody, filename, cb) {
+// Cloudinary에 base64 이미지 업로드
+function uploadToCloudinary(base64Data, filename) {
+  return new Promise((resolve, reject) => {
+    const dataUri = `data:image/png;base64,${base64Data}`;
+    cloudinary.uploader.upload(dataUri, {
+      public_id: filename,
+      folder: 'paradox-of-translation',
+      overwrite: true,
+    }, (err, result) => {
+      if (err) reject(err);
+      else resolve(result.secure_url);
+    });
+  });
+}
+
+// OpenAI로 이미지 생성 후 Cloudinary에 저장
+function generateAndUpload(reqBody, filename, cb) {
   const bodyStr = JSON.stringify(reqBody);
   const options = {
     hostname: 'api.openai.com',
@@ -38,22 +79,16 @@ function generateAndSave(reqBody, filename, cb) {
   const proxy = https.request(options, (apiRes) => {
     let data = '';
     apiRes.on('data', (d) => (data += d));
-    apiRes.on('end', () => {
+    apiRes.on('end', async () => {
       try {
         const parsed = JSON.parse(data);
         if (parsed.error || !parsed.data?.[0]) {
           cb(null, parsed.error?.message || '이미지 생성 실패');
           return;
         }
-        const filePath = path.join(IMAGES_DIR, filename);
-        const imageData = Buffer.from(parsed.data[0].b64_json, 'base64');
-        fs.writeFile(filePath, imageData, (err) => {
-          if (err) {
-            cb(null, err.message);
-            return;
-          }
-          cb(`/saved_images/${filename}`, null);
-        });
+        const base64 = parsed.data[0].b64_json;
+        const url = await uploadToCloudinary(base64, filename);
+        cb(url, null);
       } catch (e) {
         cb(null, e.message);
       }
@@ -99,50 +134,38 @@ const httpServer = http.createServer((req, res) => {
     res.end();
     return;
   }
-  if (req.url.startsWith('/saved_images/')) {
-    const filename = req.url.replace('/saved_images/', '');
-    const filePath = path.join(IMAGES_DIR, filename);
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        res.writeHead(404);
-        res.end('Not found');
-        return;
-      }
-      res.writeHead(200, {
-        'Content-Type': 'image/png',
-        'Access-Control-Allow-Origin': '*',
-      });
-      res.end(data);
-    });
-    return;
-  }
-  // saved_images 파일 목록 반환
+
+  // Cloudinary에서 저장된 이미지 목록 반환
   if (req.url === '/api/saved-images') {
-    fs.readdir(IMAGES_DIR, (err, files) => {
-      if (err) {
-        res.writeHead(500);
+    cloudinary.search
+      .expression('folder:paradox-of-translation')
+      .sort_by('created_at', 'desc')
+      .max_results(100)
+      .execute()
+      .then((result) => {
+        const urls = result.resources.map((r) => r.secure_url);
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(JSON.stringify(urls));
+      })
+      .catch(() => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end('[]');
-        return;
-      }
-      const imgs = files
-        .filter((f) => f.endsWith('.png') || f.endsWith('.jpg'))
-        .map((f) => `/saved_images/${f}`);
-      res.writeHead(200, {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       });
-      res.end(JSON.stringify(imgs));
-    });
     return;
   }
 
-  let filePath = req.url === '/' ? '/display.html' : req.url;
+  let filePath = req.url === '/' ? '/index.html' : req.url;
+
   filePath = path.join(__dirname, filePath);
   const ext = path.extname(filePath);
   const mime = {
     '.html': 'text/html',
     '.js': 'text/javascript',
     '.css': 'text/css',
+    '.mp4': 'video/mp4',
   };
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -165,13 +188,10 @@ io.on('connection', (socket) => {
     exhibitionState.mode = 'scanning';
     io.emit('state', exhibitionState);
 
-    let textA = '',
-      textB = '';
+    let textA = '', textB = '';
     await new Promise((resolve) => {
       let done = 0;
-      const finish = () => {
-        if (++done === 2) resolve();
-      };
+      const finish = () => { if (++done === 2) resolve(); };
       callGPT(
         {
           model: 'gpt-4o',
@@ -179,80 +199,57 @@ io.on('connection', (socket) => {
             {
               role: 'user',
               content: [
-                {
-                  type: 'image_url',
-                  image_url: { url: `data:image/jpeg;base64,${base64}` },
-                },
-                {
-                  type: 'text',
-                  text: '이 이미지를 객관적으로 한 문장으로 묘사하세요. 피사체, 색상, 형태에 집중하세요. 감정 없이. 반드시 한국어로만.',
-                },
+                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
+                { type: 'text', text: '이 이미지를 객관적으로 한 문장으로 묘사하세요. 피사체, 색상, 형태에 집중하세요. 감정 없이. 반드시 한국어로만.' },
               ],
             },
           ],
         },
-        (t) => {
-          textA = t;
-          finish();
-        },
+        (t) => { textA = t; finish(); },
       );
       callGPT(
         {
           model: 'gpt-4o',
           messages: [
-            {
-              role: 'system',
-              content:
-                '당신은 한국어로만 글을 쓰는 시인입니다. 반드시 한국어로만 응답하세요. 영어 사용 절대 금지.',
-            },
+            { role: 'system', content: '당신은 한국어로만 글을 쓰는 시인입니다. 반드시 한국어로만 응답하세요. 영어 사용 절대 금지.' },
             {
               role: 'user',
               content: [
-                {
-                  type: 'image_url',
-                  image_url: { url: `data:image/jpeg;base64,${base64}` },
-                },
-                {
-                  type: 'text',
-                  text: '이 이미지를 감각과 느낌으로 번역하세요. 2-3문장의 한국어 산문시로 작성하세요. 설명하지 말고 느낌으로만.',
-                },
+                { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${base64}` } },
+                { type: 'text', text: '이 이미지를 감각과 느낌으로 번역하세요. 2-3문장의 한국어 산문시로 작성하세요. 설명하지 말고 느낌으로만.' },
               ],
             },
           ],
         },
-        (t) => {
-          textB = t;
-          finish();
-        },
+        (t) => { textB = t; finish(); },
       );
     });
 
-    // 텍스트 먼저 전송 — 애니메이션용
     io.emit('textReady', { textA, textB });
 
     const ts = Date.now();
     const [imgAUrl, imgBUrl] = await Promise.all([
       new Promise((resolve) =>
-        generateAndSave(
+        generateAndUpload(
           {
             model: 'gpt-image-1',
             prompt: `Objective technical photograph, inventory style, flat neutral lighting, 8k, sharp. Subject: ${textA}. ABSOLUTELY NO TEXT.`,
             n: 1,
             size: '1024x1024',
           },
-          `a_${ts}.png`,
+          `a_${ts}`,
           (url) => resolve(url),
         ),
       ),
       new Promise((resolve) =>
-        generateAndSave(
+        generateAndUpload(
           {
             model: 'gpt-image-1',
             prompt: `Poetic, cinematic, atmospheric photograph, emotive quality, shallow depth of field. Subject: ${textB}. ABSOLUTELY NO TEXT.`,
             n: 1,
             size: '1024x1024',
           },
-          `b_${ts}.png`,
+          `b_${ts}`,
           (url) => resolve(url),
         ),
       ),
@@ -271,31 +268,29 @@ io.on('connection', (socket) => {
     exhibitionState.currentScan = scan;
     exhibitionState.scans.unshift(scan);
     exhibitionState.mode = 'result';
+    // MongoDB에 저장
+    if (scansCollection) {
+      scansCollection.insertOne({ ...scan }).catch(console.error);
+    }
     io.emit('state', exhibitionState);
   });
 
-  socket.on('deepen', async () => {
-    // deepen 로직
-  });
+  socket.on('deepen', async () => {});
 
-  // 아카이브 모드 진입
   socket.on('showArchive', () => {
     exhibitionState.mode = 'archive';
     io.emit('state', exhibitionState);
   });
 
-  // 아카이브에서 특정 항목 선택
   socket.on('selectArchive', (index) => {
     io.emit('selectArchive', index);
   });
 
-  // 아카이브 나가기
   socket.on('exitArchive', () => {
     exhibitionState.mode = exhibitionState.currentScan ? 'result' : 'idle';
     io.emit('state', exhibitionState);
   });
 
-  // 기존 이벤트들
   socket.on('setView', (mode) => {
     exhibitionState.viewMode = mode;
     io.emit('state', exhibitionState);
@@ -307,6 +302,8 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () =>
-  console.log(`✅ 서버 구동: http://localhost:${PORT}`),
-);
+connectDB().then(() => {
+  httpServer.listen(PORT, () =>
+    console.log(`✅ 서버 구동: http://localhost:${PORT}`),
+  );
+});

@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Henny+Penny&family=IM+Fell+English:ital@0;1&family=Space+Mono:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Space Mono', monospace;
+}
+
+#grid {
+  position: fixed;
+  inset: 0;
+  display: grid;
+}
+
+.tile {
+  overflow: hidden;
+  position: relative;
+}
+
+.tile video {
+  position: absolute;
+  object-fit: cover;
+  transition: opacity 0.6s ease;
+}
+
+.tile .vid-a {
+  opacity: 0.15;
+}
+.tile .vid-b {
+  opacity: 0;
+}
+.tile.show-b .vid-a {
+  opacity: 0;
+}
+.tile.show-b .vid-b {
+  opacity: 0.15;
+}
+
+.tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #fff;
+  opacity: 0.1;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 390px;
+  pointer-events: none;
+}
+
+.title {
+  font-family: 'Henny Penny', serif;
+  font-size: 120px;
+  color: #fff;
+  letter-spacing: 0.1em;
+  text-align: center;
+  mix-blend-mode: difference;
+}
+
+.subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 90px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 40px;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+}
+
+/* 흩어진 텍스트 */
+.float-text {
+  position: fixed;
+  z-index: 10;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.05em;
+  line-height: 1.9;
+  pointer-events: none;
+}
+
+.top-right {
+  font-size: 18px;
+  top: 40px;
+  right: 48px;
+  text-align: right;
+  line-height: 1.7;
+}
+
+.bottom-left-1 {
+  font-size: 16px;
+  bottom: 40px;
+  left: 48px;
+}
+
+.bottom-left-2 {
+  font-size: 16px;
+  bottom: 40px;
+  left: 520px;
+}
