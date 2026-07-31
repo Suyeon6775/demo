@@ -47,8 +47,12 @@
     <div id="screen-result" class="hidden">
       <!-- 상단 헤더 -->
       <div class="result-header">
-        <img src="./Paradox-of-Translation.svg" class="result-title-img" alt="Paradox of Translation" />
-        <span class="result-scan-num" id="result-scan-num"></span>
+        <img
+          src="./Paradox-of-Translation.svg"
+          class="result-title-img"
+          alt="Paradox of Translation"
+        />
+        <!-- <span class="result-scan-num" id="result-scan-num"></span> -->
       </div>
 
       <!-- 3패널 -->
@@ -243,10 +247,11 @@
 
           // 원본 이미지
           if (scan.originalDataUrl)
-            document.getElementById('original-scan-img').src = scan.originalDataUrl;
+            document.getElementById('original-scan-img').src =
+              scan.originalDataUrl;
 
           // 스캔 번호
-          const scanIdx = state.scans.findIndex(s => s.id === scan.id);
+          const scanIdx = state.scans.findIndex((s) => s.id === scan.id);
           const scanNum = state.scans.length - scanIdx;
           document.getElementById('result-scan-num').textContent =
             'SCAN ' + String(scanNum).padStart(3, '0');
