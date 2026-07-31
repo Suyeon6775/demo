@@ -127,7 +127,7 @@ body {
 }
 
 .result-title-img {
-  height: clamp(28px, 0.1vw, 56px);
+  height: clamp(16px, 0.1vw, 56px);
   width: auto;
   display: block;
   filter: invert(1);
