@@ -64,7 +64,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-bottom: 14vh; /* 고정 padding-top 대신 화면 중앙 */
+  padding-bottom: 10vh; /* 고정 padding-top 대신 화면 중앙 */
   gap: 1vh;
   pointer-events: none;
 }
