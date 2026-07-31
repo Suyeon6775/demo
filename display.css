@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Astloch:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
 *,
 *::before,
@@ -108,11 +109,42 @@ body {
 #screen-result {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  grid-template-rows: 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: #fff;
+}
+
+/* 상단 헤더 바 */
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 40px;
+  border-bottom: 1px solid var(--dim);
+  flex-shrink: 0;
+}
+
+.result-title-img {
+  height: clamp(22px, 2vw, 40px);
+  width: auto;
+  display: block;
+}
+
+.result-scan-num {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(10px, 0.85vw, 13px);
+  letter-spacing: 0.25em;
+  color: #999;
+}
+
+/* 3패널 그리드 */
+.result-panels {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1px minmax(180px, 240px) 1px 1fr;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .divider {
@@ -120,58 +152,79 @@ body {
   opacity: 0.6;
 }
 
+/* 공통 패널 */
 .panel {
-  display: flex;
-  flex-direction: column;
-  padding: 48px 40px;
   overflow: hidden;
-  transition:
-    opacity 0.6s,
-    filter 0.6s;
+  transition: opacity 0.6s, filter 0.6s;
   position: relative;
 }
 
-.panel-label {
-  font-size: 24px;
-  /* letter-spacing: 0.2em; */
-  text-transform: uppercase;
-  color: #000;
-  margin-bottom: 24px;
+/* LITERAL 패널 — label / text(고정높이) / image */
+.panel-a {
+  display: grid;
+  grid-template-rows: auto clamp(80px, 11vh, 140px) 1fr;
+  padding: 40px 36px 0;
 }
 
-.panel-text {
-  font-size: clamp(14px, 1.4vw, 18px);
-  line-height: 1.8;
-  margin-bottom: 16px;
-  transition: opacity 0.4s;
-  word-break: keep-all;
-  overflow-wrap: break-word;
+.panel-a .panel-label {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(16px, 1.6vw, 24px);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #000;
+  padding-bottom: 20px;
 }
 
 .panel-a .panel-text {
-  font-family: var(--font-mono);
+  font-family: 'Pretendard', sans-serif;
+  font-size: clamp(13px, 1.2vw, 17px);
+  font-weight: 300;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
   color: var(--fg);
-  font-size: clamp(15px, 1.5vw, 20px);
-  letter-spacing: 0.02em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  padding-bottom: 20px;
+}
+
+/* POETIC 패널 — label / text(고정높이) / image */
+.panel-b {
+  display: grid;
+  grid-template-rows: auto clamp(80px, 11vh, 140px) 1fr;
+  padding: 40px 36px 0;
+}
+
+.panel-b .panel-label {
+  font-family: 'Astloch', cursive;
+  font-size: clamp(16px, 1.6vw, 24px);
+  font-weight: normal;
+  color: #000;
+  padding-bottom: 20px;
 }
 
 .panel-b .panel-text {
-  font-family: var(--font-serif);
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: clamp(14px, 1.3vw, 18px);
+  line-height: 2.1;
   color: var(--fg);
-  font-size: clamp(15px, 1.5vw, 20px);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  padding-bottom: 20px;
 }
 
+/* 이미지 래퍼 — 항상 같은 위치 */
 .panel-img-wrap {
-  flex: 1;
-  display: flex;
-  align-items: flex-start;
+  min-height: 0;
   overflow: hidden;
   position: relative;
 }
 
 .panel-img-wrap img {
   width: 100%;
-  max-height: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
@@ -182,6 +235,36 @@ body {
   background: var(--bg);
   pointer-events: none;
   transition: opacity 0.3s;
+}
+
+/* 원본(가운데) 패널 */
+.panel-original {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: 40px 16px 0;
+}
+
+.panel-original .panel-label {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: clamp(10px, 0.85vw, 13px);
+  letter-spacing: 0.25em;
+  color: #999;
+  padding-bottom: 16px;
+}
+
+.original-img-wrap {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+}
+
+.original-img-wrap img {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 #screen-result.view-literal .panel-b {

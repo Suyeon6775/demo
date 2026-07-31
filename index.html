@@ -45,23 +45,41 @@
 
     <!-- RESULT -->
     <div id="screen-result" class="hidden">
-      <div class="panel panel-a">
-        <div class="panel-label">LITERAL</div>
-        <p class="panel-text" id="text-a"></p>
-        <div class="panel-img-wrap">
-          <img id="img-a" src="" alt="" />
-          <div class="loss-overlay" id="loss-a"></div>
-        </div>
+      <!-- 상단 헤더 -->
+      <div class="result-header">
+        <img src="./Paradox-of-Translation.svg" class="result-title-img" alt="Paradox of Translation" />
+        <span class="result-scan-num" id="result-scan-num"></span>
       </div>
 
-      <div class="divider"></div>
+      <!-- 3패널 -->
+      <div class="result-panels">
+        <div class="panel panel-a">
+          <div class="panel-label">LITERAL</div>
+          <p class="panel-text" id="text-a"></p>
+          <div class="panel-img-wrap">
+            <img id="img-a" src="" alt="" />
+            <div class="loss-overlay" id="loss-a"></div>
+          </div>
+        </div>
 
-      <div class="panel panel-b">
-        <div class="panel-label">POETIC</div>
-        <p class="panel-text" id="text-b"></p>
-        <div class="panel-img-wrap">
-          <img id="img-b" src="" alt="" />
-          <div class="loss-overlay" id="loss-b"></div>
+        <div class="divider"></div>
+
+        <div class="panel panel-original">
+          <div class="panel-label">Original</div>
+          <div class="original-img-wrap">
+            <img id="original-scan-img" src="" alt="" />
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel panel-b">
+          <div class="panel-label">POETIC</div>
+          <p class="panel-text" id="text-b"></p>
+          <div class="panel-img-wrap">
+            <img id="img-b" src="" alt="" />
+            <div class="loss-overlay" id="loss-b"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -222,6 +240,16 @@
             document.getElementById('img-a').src = current.imageA;
           if (current.imageB)
             document.getElementById('img-b').src = current.imageB;
+
+          // 원본 이미지
+          if (scan.originalDataUrl)
+            document.getElementById('original-scan-img').src = scan.originalDataUrl;
+
+          // 스캔 번호
+          const scanIdx = state.scans.findIndex(s => s.id === scan.id);
+          const scanNum = state.scans.length - scanIdx;
+          document.getElementById('result-scan-num').textContent =
+            'SCAN ' + String(scanNum).padStart(3, '0');
 
           const resultEl = document.getElementById('screen-result');
           resultEl.className = '';
