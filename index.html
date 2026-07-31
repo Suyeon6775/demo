@@ -9,7 +9,6 @@
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
-
     <!-- IDLE: 랜딩 페이지 -->
     <div id="screen-idle">
       <div id="grid"></div>
@@ -99,8 +98,8 @@
 
     <script>
       // ── 랜딩 비디오 그리드 ────────────────────────────────────
-      const COLS = 5;
-      const ROWS = 5;
+      const COLS = 4;
+      const ROWS = 4;
       const W = window.innerWidth;
       const H = window.innerHeight;
       const tileW = W / COLS;
@@ -144,7 +143,8 @@
 
           function scheduledSwitch() {
             const vids = tile.querySelectorAll('video');
-            const otherIdx = 1 + Math.floor(Math.random() * OTHER_VIDEOS.length);
+            const otherIdx =
+              1 + Math.floor(Math.random() * OTHER_VIDEOS.length);
             vids[0].style.opacity = '0';
             vids[otherIdx].style.opacity = '0.3';
             const hold = 1000 + Math.random() * 2000;
@@ -198,7 +198,8 @@
           document.getElementById('depth-indicator').classList.add('hidden');
         } else if (state.mode === 'scanning') {
           if (state.currentScan?.originalDataUrl && state.depthLevel === 0) {
-            document.getElementById('original-img').src = state.currentScan.originalDataUrl;
+            document.getElementById('original-img').src =
+              state.currentScan.originalDataUrl;
             showOnly('reveal');
             revealTimer = setTimeout(() => {
               showOnly('scanning');
@@ -217,13 +218,17 @@
 
           document.getElementById('text-a').textContent = current.textA;
           document.getElementById('text-b').textContent = current.textB;
-          if (current.imageA) document.getElementById('img-a').src = current.imageA;
-          if (current.imageB) document.getElementById('img-b').src = current.imageB;
+          if (current.imageA)
+            document.getElementById('img-a').src = current.imageA;
+          if (current.imageB)
+            document.getElementById('img-b').src = current.imageB;
 
           const resultEl = document.getElementById('screen-result');
           resultEl.className = '';
-          if (state.viewMode === 'literal') resultEl.classList.add('view-literal');
-          if (state.viewMode === 'poetic') resultEl.classList.add('view-poetic');
+          if (state.viewMode === 'literal')
+            resultEl.classList.add('view-literal');
+          if (state.viewMode === 'poetic')
+            resultEl.classList.add('view-poetic');
 
           const lossOpacity = state.lossLevel / 100;
           document.getElementById('loss-a').style.opacity = lossOpacity;
@@ -255,9 +260,13 @@
       function speak(textA, textB) {
         synth.cancel();
         const uttA = new SpeechSynthesisUtterance(textA);
-        uttA.lang = 'ko-KR'; uttA.rate = 0.9; uttA.pitch = 0.8;
+        uttA.lang = 'ko-KR';
+        uttA.rate = 0.9;
+        uttA.pitch = 0.8;
         const uttB = new SpeechSynthesisUtterance(textB);
-        uttB.lang = 'ko-KR'; uttB.rate = 0.75; uttB.pitch = 0.7;
+        uttB.lang = 'ko-KR';
+        uttB.rate = 0.75;
+        uttB.pitch = 0.7;
         uttA.onend = () => setTimeout(() => synth.speak(uttB), 800);
         synth.speak(uttA);
       }
@@ -288,31 +297,42 @@
 
         const container = document.createElement('div');
         container.id = 'stack-container';
-        container.style.cssText = `position:absolute;top:0;left:0;width:${cols*cellSize}px;height:${rows*cellSize}px;display:grid;grid-template-columns:repeat(${cols},${cellSize}px);grid-template-rows:repeat(${rows},${cellSize}px);pointer-events:none`;
+        container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellSize}px;height:${rows * cellSize}px;display:grid;grid-template-columns:repeat(${cols},${cellSize}px);grid-template-rows:repeat(${rows},${cellSize}px);pointer-events:none`;
         scanning.appendChild(container);
 
-        const newScans = (window._currentScans || []).map(s => s.originalDataUrl || s.imageA).filter(Boolean);
+        const newScans = (window._currentScans || [])
+          .map((s) => s.originalDataUrl || s.imageA)
+          .filter(Boolean);
         const shuffled = savedImageUrls.slice().sort(() => Math.random() - 0.5);
         const allImages = newScans.concat(shuffled).slice(0, total);
 
         let idx = 0;
         function addNext() {
-          if (idx >= allImages.length) { clearInterval(stackInterval); stackInterval = null; return; }
+          if (idx >= allImages.length) {
+            clearInterval(stackInterval);
+            stackInterval = null;
+            return;
+          }
           const img = document.createElement('img');
           img.src = allImages[idx++];
           img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;opacity:0;transform:scale(0.85);transition:opacity 0.3s ease,transform 0.3s cubic-bezier(0.22,1,0.36,1)`;
           container.appendChild(img);
-          requestAnimationFrame(() => requestAnimationFrame(() => {
-            img.style.opacity = '1';
-            img.style.transform = 'scale(1)';
-          }));
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              img.style.opacity = '1';
+              img.style.transform = 'scale(1)';
+            }),
+          );
         }
         addNext();
         stackInterval = setInterval(addNext, 250);
       }
 
       function stopScanAnim() {
-        if (stackInterval) { clearInterval(stackInterval); stackInterval = null; }
+        if (stackInterval) {
+          clearInterval(stackInterval);
+          stackInterval = null;
+        }
         const old = document.getElementById('stack-container');
         if (old) old.remove();
       }
@@ -340,11 +360,16 @@
 
       function showDetail(scan) {
         const chain = scan.depthChain?.[0] || scan;
-        document.getElementById('detail-original').src = scan.originalDataUrl || '';
-        document.getElementById('detail-text-a').textContent = chain.textA || scan.textA || '';
-        document.getElementById('detail-text-b').textContent = chain.textB || scan.textB || '';
-        document.getElementById('detail-img-a').src = chain.imageA || scan.imageA || '';
-        document.getElementById('detail-img-b').src = chain.imageB || scan.imageB || '';
+        document.getElementById('detail-original').src =
+          scan.originalDataUrl || '';
+        document.getElementById('detail-text-a').textContent =
+          chain.textA || scan.textA || '';
+        document.getElementById('detail-text-b').textContent =
+          chain.textB || scan.textB || '';
+        document.getElementById('detail-img-a').src =
+          chain.imageA || scan.imageA || '';
+        document.getElementById('detail-img-b').src =
+          chain.imageB || scan.imageB || '';
         document.getElementById('archive-detail').classList.remove('hidden');
       }
 
