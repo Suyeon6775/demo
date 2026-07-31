@@ -63,8 +63,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* 고정 padding-top 대신 화면 중앙 */
-  gap: 2vh;
+  justify-content: center;
+  padding-bottom: 10vh; /* 고정 padding-top 대신 화면 중앙 */
+  gap: 1vh;
   pointer-events: none;
 }
 
