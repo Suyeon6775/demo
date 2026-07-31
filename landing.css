@@ -93,7 +93,7 @@ body {
   position: fixed;
   z-index: 10;
   font-family: 'Space Mono', monospace;
-  font-size: clamp(9px, 0.9vw, 14px);
+  font-size: clamp(9px, 0.9vw, 200px);
   color: rgba(255, 255, 255, 0.8);
   letter-spacing: 0.05em;
   line-height: 1.9;
@@ -101,7 +101,7 @@ body {
 }
 
 .top-right {
-  font-size: clamp(11px, 1.1vw, 18px);
+  font-size: clamp(11px, 1.1vw, 200px);
   top: 3vh;
   right: 3vw;
   text-align: right;
@@ -109,13 +109,13 @@ body {
 }
 
 .bottom-left-1 {
-  font-size: clamp(11px, 1.1vw, 16px);
+  font-size: clamp(11px, 1.1vw, 200px);
   bottom: 3vh;
   left: 3vw;
 }
 
 .bottom-left-2 {
-  font-size: clamp(11px, 1.1vw, 16px);
+  font-size: clamp(11px, 1.1vw, 200px);
   bottom: 3vh;
   left: 28vw; /* 고정 520px 대신 뷰포트 기준 */
 }
