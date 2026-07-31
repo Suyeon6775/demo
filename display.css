@@ -129,6 +129,7 @@ body {
   height: clamp(22px, 2vw, 40px);
   width: auto;
   display: block;
+  filter: invert(1);
 }
 
 .result-scan-num {
@@ -162,7 +163,7 @@ body {
 /* LITERAL 패널 — label / text(고정높이) / image */
 .panel-a {
   display: grid;
-  grid-template-rows: auto clamp(80px, 11vh, 140px) 1fr;
+  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
   padding: 40px 36px 0;
 }
 
@@ -192,7 +193,7 @@ body {
 /* POETIC 패널 — label / text(고정높이) / image */
 .panel-b {
   display: grid;
-  grid-template-rows: auto clamp(80px, 11vh, 140px) 1fr;
+  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
   padding: 40px 36px 0;
 }
 
@@ -241,7 +242,7 @@ body {
 /* 원본(가운데) 패널 — 사이드 패널과 동일한 3행 구조로 이미지 상단 맞춤 */
 .panel-original {
   display: grid;
-  grid-template-rows: auto clamp(80px, 11vh, 140px) 1fr;
+  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
   padding: 40px 16px 0;
 }
 
@@ -250,22 +251,21 @@ body {
   font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.25em;
   color: #999;
-  padding-bottom: 16px;
 }
 
 .original-img-wrap {
   grid-row: 3; /* 텍스트 행 건너뛰고 이미지 행에 배치 */
   min-height: 0;
   overflow: hidden;
-  display: flex;
-  align-items: flex-start;
+  aspect-ratio: 1;
+  align-self: start;
+  width: 100%;
 }
 
 .original-img-wrap img {
   width: 100%;
-  height: auto;
-  max-height: 100%;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
