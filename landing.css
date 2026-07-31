@@ -79,7 +79,7 @@ body {
 
 .subtitle {
   font-family: 'Space Mono', monospace;
-  font-size: clamp(16px, 4vw, 80px); /* 화면 너비에 맞게 조절 */
+  font-size: clamp(16px, 5.2vw, 80px); /* 화면 너비에 맞게 조절 */
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   text-align: center;
