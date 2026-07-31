@@ -65,7 +65,7 @@ body {
   align-items: center;
   justify-content: center;
   margin-top: 4vh;
-  gap: 1vh;
+  gap: 0.4vh;
   pointer-events: none;
 }
 
