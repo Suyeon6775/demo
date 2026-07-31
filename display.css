@@ -117,22 +117,25 @@ body {
 
 /* 상단 헤더 바 */
 .result-header {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 18px 40px;
   border-bottom: 1px solid var(--dim);
   flex-shrink: 0;
 }
 
 .result-title-img {
-  height: clamp(22px, 0.8vw, 40px);
+  height: clamp(28px, 3vw, 56px);
   width: auto;
   display: block;
   filter: invert(1);
 }
 
 .result-scan-num {
+  position: absolute;
+  right: 40px;
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.25em;
@@ -156,9 +159,7 @@ body {
 /* 공통 패널 */
 .panel {
   overflow: hidden;
-  transition:
-    opacity 0.6s,
-    filter 0.6s;
+  transition: opacity 0.6s, filter 0.6s;
   position: relative;
 }
 
