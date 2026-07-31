@@ -126,7 +126,7 @@ body {
 }
 
 .result-title-img {
-  height: clamp(22px, 2vw, 40px);
+  height: clamp(22px, 0.8vw, 40px);
   width: auto;
   display: block;
   filter: invert(1);
@@ -156,7 +156,9 @@ body {
 /* 공통 패널 */
 .panel {
   overflow: hidden;
-  transition: opacity 0.6s, filter 0.6s;
+  transition:
+    opacity 0.6s,
+    filter 0.6s;
   position: relative;
 }
 
