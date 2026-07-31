@@ -77,10 +77,14 @@ body {
   overflow: hidden;
 }
 
-.scan-line { display: none; }
+.scan-line {
+  display: none;
+}
 
 /* archive-strip 제거됨 */
-#archive-strip { display: none; }
+#archive-strip {
+  display: none;
+}
 
 .scan-label {
   font-size: 11px;
@@ -294,12 +298,9 @@ body {
   flex-shrink: 0;
 }
 
-.archive-title {
-  font-family: var(--font-serif);
-  font-size: clamp(32px, 4vw, 56px);
-  font-style: normal;
-  color: var(--fg);
-  letter-spacing: 0.1rem;
+.archive-title-img {
+  height: clamp(32px, 4vw, 56px);
+  width: auto;
 }
 
 .archive-count {
