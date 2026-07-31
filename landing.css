@@ -70,7 +70,7 @@ body {
 
 .title {
   font-family: 'Henny Penny', serif;
-  font-size: clamp(40px, 4.7vw, 200px); /* 화면 너비에 맞게 조절 */
+  font-size: clamp(40px, 4.6vw, 200px); /* 화면 너비에 맞게 조절 */
   color: #fff;
   letter-spacing: 0.1em;
   text-align: center;
@@ -79,7 +79,7 @@ body {
 
 .subtitle {
   font-family: 'Space Mono', monospace;
-  font-size: clamp(16px, 3.7vw, 200px); /* 화면 너비에 맞게 조절 */
+  font-size: clamp(16px, 3.9vw, 200px); /* 화면 너비에 맞게 조절 */
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   text-align: center;
