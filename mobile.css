@@ -61,11 +61,8 @@ body {
   font-family: var(--font-mono);
 }
 
-.screen-title {
-  font-size: 11px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--mid);
+.screen-title-img {
+  width: 120px;
 }
 
 /* ── 메인 메뉴 ───────────────────── */
