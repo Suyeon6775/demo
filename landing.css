@@ -71,7 +71,7 @@ body {
 
 .title {
   font-family: 'Henny Penny', serif;
-  font-size: clamp(40px, 4.6vw, 200px); /* 화면 너비에 맞게 조절 */
+  font-size: clamp(40px, 4.8vw, 200px); /* 화면 너비에 맞게 조절 */
   color: #fff;
   letter-spacing: 0.1em;
   text-align: center;
