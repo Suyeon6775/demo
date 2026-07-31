@@ -299,7 +299,7 @@ body {
 }
 
 .archive-title-img {
-  height: clamp(32px, 4vw, 56px);
+  height: clamp(32px, 4vw, 200px);
   width: auto;
 }
 
