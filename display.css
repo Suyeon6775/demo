@@ -177,10 +177,15 @@ body {
   width: 100%;
   aspect-ratio: 1;
   flex-shrink: 0;
+  order: 1;
+}
+
+.panel-a .panel-img-wrap img {
+  height: auto;
 }
 
 .panel-a .panel-label {
-  grid-row: 2;
+  order: 2;
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(16px, 1.6vw, 24px);
   font-weight: normal;
@@ -193,7 +198,7 @@ body {
 }
 
 .panel-a .panel-text {
-  grid-row: 3;
+  order: 3;
   font-family: 'Pretendard', sans-serif;
   font-size: clamp(6px, 1.2vw, 17px);
   font-weight: 300;
@@ -218,10 +223,15 @@ body {
   width: 100%;
   aspect-ratio: 1;
   flex-shrink: 0;
+  order: 1;
+}
+
+.panel-b .panel-img-wrap img {
+  height: auto;
 }
 
 .panel-b .panel-label {
-  grid-row: 2;
+  order: 2;
   font-family: 'Astloch', cursive;
   font-size: clamp(16px, 1.6vw, 24px);
   font-weight: normal;
@@ -232,7 +242,7 @@ body {
 }
 
 .panel-b .panel-text {
-  grid-row: 3;
+  order: 3;
   font-family: 'Nanum Myeongjo', serif;
   font-size: clamp(6px, 1.2vw, 17px);
   line-height: 2.1;
