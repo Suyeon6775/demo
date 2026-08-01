@@ -391,7 +391,7 @@ body {
 }
 
 .archive-title-img {
-  height: clamp(32px, 3.8vw, 200px);
+  height: clamp(32px, 2vw, 200px);
   width: auto;
 }
 
