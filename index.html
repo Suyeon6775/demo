@@ -66,12 +66,12 @@
 
         <div class="divider"></div>
 
-        <div class="panel panel-original">
+        <!-- <div class="panel panel-original">
           <div class="panel-label">Original</div>
           <div class="original-img-wrap">
             <img id="original-scan-img" src="" alt="" />
           </div>
-        </div>
+        </div> -->
 
         <div class="divider"></div>
 
@@ -211,7 +211,7 @@
           window._currentScans = state.scans;
           document.getElementById('depth-indicator').classList.add('hidden');
         } else if (state.mode === 'scanning') {
-          showOnly('scanning');
+          // scanStarted 이벤트가 reveal → scanning 전환을 담당
         } else if (state.mode === 'result') {
           const scan = state.currentScan;
           if (!scan) return;
@@ -255,7 +255,10 @@
       // ── scanStarted: 지금 찍은 사진 크게 → 그다음 플립 그리드 ──
       let revealTimer = null;
       socket.on('scanStarted', ({ originalDataUrl }) => {
-        if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
+        if (revealTimer) {
+          clearTimeout(revealTimer);
+          revealTimer = null;
+        }
         document.getElementById('original-img').src = originalDataUrl;
         showOnly('reveal');
         revealTimer = setTimeout(() => {
