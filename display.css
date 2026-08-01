@@ -166,24 +166,32 @@ body {
   position: relative;
 }
 
-/* LITERAL 패널 — label / text(고정높이) / image */
+/* ▼ 변경1: LITERAL 패널 — image 상단, label/text 하단 중앙정렬 */
 .panel-a {
   display: grid;
-  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
+  grid-template-rows: 1fr auto auto;
   padding: 40px 36px 0;
 }
 
+.panel-a .panel-img-wrap {
+  grid-row: 1;
+}
+
 .panel-a .panel-label {
+  grid-row: 2;
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(16px, 1.6vw, 24px);
   font-weight: normal;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #000;
+  text-align: center;
   padding-bottom: 20px;
+  padding-top: 20px;
 }
 
 .panel-a .panel-text {
+  grid-row: 3;
   font-family: 'Pretendard', sans-serif;
   font-size: clamp(6px, 1.2vw, 17px);
   font-weight: 300;
@@ -193,25 +201,34 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
   overflow: hidden;
+  text-align: center;
   padding-bottom: 20px;
 }
 
-/* POETIC 패널 — label / text(고정높이) / image */
+/* ▼ 변경1: POETIC 패널 — image 상단, label/text 하단 중앙정렬 */
 .panel-b {
   display: grid;
-  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
+  grid-template-rows: 1fr auto auto;
   padding: 40px 36px 0;
 }
 
+.panel-b .panel-img-wrap {
+  grid-row: 1;
+}
+
 .panel-b .panel-label {
+  grid-row: 2;
   font-family: 'Astloch', cursive;
   font-size: clamp(16px, 1.6vw, 24px);
   font-weight: normal;
   color: #000;
+  text-align: center;
   padding-bottom: 20px;
+  padding-top: 20px;
 }
 
 .panel-b .panel-text {
+  grid-row: 3;
   font-family: 'Nanum Myeongjo', serif;
   font-size: clamp(6px, 1.2vw, 17px);
   line-height: 2.1;
@@ -219,6 +236,7 @@ body {
   word-break: keep-all;
   overflow-wrap: break-word;
   overflow: hidden;
+  text-align: center;
   padding-bottom: 20px;
 }
 
@@ -245,11 +263,12 @@ body {
   transition: opacity 0.3s;
 }
 
-/* 원본(가운데) 패널 — 사이드 패널과 동일한 3행 구조로 이미지 상단 맞춤 */
+/* ▼ 변경2: 원본(가운데) 패널 — 수직 가운데 정렬 */
 .panel-original {
-  display: grid;
-  grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
-  padding: 40px 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
 }
 
 .panel-original .panel-label {
@@ -260,11 +279,9 @@ body {
 }
 
 .original-img-wrap {
-  grid-row: 3; /* 텍스트 행 건너뛰고 이미지 행에 배치 */
   min-height: 0;
   overflow: hidden;
   aspect-ratio: 1;
-  align-self: start;
   width: 100%;
 }
 
