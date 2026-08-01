@@ -318,13 +318,14 @@
         if (oldEl) oldEl.remove();
 
         const cols = 6;
-        const cellSize = Math.ceil(window.innerWidth / cols);
-        const rows = Math.ceil(window.innerHeight / cellSize) + 1;
+        const rows = 4;
+        const cellW = Math.ceil(window.innerWidth / cols);
+        const cellH = Math.ceil(window.innerHeight / rows);
         const total = cols * rows;
 
         const container = document.createElement('div');
         container.id = 'stack-container';
-        container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellSize}px;height:${rows * cellSize}px;display:grid;grid-template-columns:repeat(${cols},${cellSize}px);grid-template-rows:repeat(${rows},${cellSize}px);pointer-events:none`;
+        container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellW}px;height:${rows * cellH}px;display:grid;grid-template-columns:repeat(${cols},${cellW}px);grid-template-rows:repeat(${rows},${cellH}px);pointer-events:none`;
         scanning.appendChild(container);
 
         const newScans = (window._currentScans || [])
@@ -343,7 +344,7 @@
           const img = document.createElement('img');
           img.src = allImages[idx % allImages.length];
           idx++;
-          img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
+          img.style.cssText = `width:${cellW}px;height:${cellH}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
           container.appendChild(img);
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
