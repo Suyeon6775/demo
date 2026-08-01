@@ -60,7 +60,10 @@ body {
 }
 
 .screen-title-img {
-  width: 120px;
+  width: 60px;
+  height: auto;
+  display: block;
+  filter: invert(1);
 }
 
 /* ── 메인 메뉴 ───────────────────── */
@@ -464,17 +467,32 @@ input[type='range']::-webkit-slider-thumb {
   cursor: pointer;
 }
 
-/* mobile.css 에 추가/수정하세요 */
+/* ── 아카이브 ────────────────────── */
+#screen-archive .screen-header {
+  justify-content: center;
+  position: relative;
+}
+
+#screen-archive .screen-header .back-btn {
+  position: absolute;
+  left: 20px;
+}
+
+#screen-archive .screen-header #archive-mobile-count {
+  position: absolute;
+  right: 20px;
+}
+
 .archive-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3열로 설정 (모바일 환경 고려) */
-  gap: 0px; /* 빈 공간 제거 */
-  padding: 0px; /* 패딩 제거 */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  padding: 0;
   width: 100%;
 }
 
 .archive-grid-item {
-  aspect-ratio: 1; /* 정사각형 비율 유지 */
+  aspect-ratio: 1;
   overflow: hidden;
   cursor: pointer;
   display: block;
@@ -483,7 +501,7 @@ input[type='range']::-webkit-slider-thumb {
 .archive-grid-item img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* 이미지가 찌그러지지 않고 셀을 꽉 채움 */
+  object-fit: cover;
   display: block;
 }
 
