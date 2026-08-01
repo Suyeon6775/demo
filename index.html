@@ -250,12 +250,6 @@
             document.getElementById('original-scan-img').src =
               scan.originalDataUrl;
 
-          // 스캔 번호
-          const scanIdx = state.scans.findIndex((s) => s.id === scan.id);
-          const scanNum = state.scans.length - scanIdx;
-          document.getElementById('result-scan-num').textContent =
-            'SCAN ' + String(scanNum).padStart(3, '0');
-
           const resultEl = document.getElementById('screen-result');
           resultEl.className = '';
           if (state.viewMode === 'literal')
@@ -337,23 +331,23 @@
           .map((s) => s.originalDataUrl || s.imageA)
           .filter(Boolean);
         const shuffled = savedImageUrls.slice().sort(() => Math.random() - 0.5);
-        const allImages = newScans.concat(shuffled).slice(0, total);
+        const allImages = newScans.concat(shuffled);
 
         let idx = 0;
         function addNext() {
-          if (idx >= allImages.length) {
+          if (idx >= total || allImages.length === 0) {
             clearInterval(stackInterval);
             stackInterval = null;
             return;
           }
           const img = document.createElement('img');
-          img.src = allImages[idx++];
-          img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;opacity:0;transform:scale(0.85);transition:opacity 0.3s ease,transform 0.3s cubic-bezier(0.22,1,0.36,1)`;
+          img.src = allImages[idx % allImages.length];
+          idx++;
+          img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
           container.appendChild(img);
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
-              img.style.opacity = '1';
-              img.style.transform = 'scale(1)';
+              img.style.transform = 'perspective(600px) rotateY(0deg)';
             }),
           );
         }
