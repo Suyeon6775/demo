@@ -252,12 +252,12 @@ body {
   padding: 40px 16px 0;
 }
 
-.panel-original .panel-label {
+/* .panel-original .panel-label {
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.25em;
   color: #999;
-}
+} */
 
 .original-img-wrap {
   grid-row: 3; /* 텍스트 행 건너뛰고 이미지 행에 배치 */

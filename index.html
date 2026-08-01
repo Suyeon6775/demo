@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="display.css" />
     <link rel="stylesheet" href="landing.css" />
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="icon" href="data:," />
   </head>
   <body>
     <!-- IDLE: 랜딩 페이지 -->
@@ -69,12 +68,12 @@
 
         <div class="divider"></div>
 
-        <div class="panel panel-original">
+        <!-- <div class="panel panel-original">
           <div class="panel-label">Original</div>
           <div class="original-img-wrap">
             <img id="original-scan-img" src="" alt="" />
           </div>
-        </div>
+        </div> -->
 
         <div class="divider"></div>
 
@@ -319,14 +318,13 @@
         if (oldEl) oldEl.remove();
 
         const cols = 6;
-        const rows = 4;
-        const cellW = Math.ceil(window.innerWidth / cols);
-        const cellH = Math.ceil(window.innerHeight / rows);
-        const total = cols * rows;
+        const cellSize = Math.floor(window.innerWidth / cols);
+        const maxRows = Math.floor(window.innerHeight / cellSize);
+        const total = cols * maxRows;
 
         const container = document.createElement('div');
         container.id = 'stack-container';
-        container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellW}px;height:${rows * cellH}px;display:grid;grid-template-columns:repeat(${cols},${cellW}px);grid-template-rows:repeat(${rows},${cellH}px);pointer-events:none`;
+        container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellSize}px;height:0;display:grid;grid-template-columns:repeat(${cols},${cellSize}px);pointer-events:none;overflow:hidden`;
         scanning.appendChild(container);
 
         const newScans = (window._currentScans || [])
@@ -342,10 +340,15 @@
             stackInterval = null;
             return;
           }
+          // 새 행 시작할 때 컨테이너 높이 한 행씩 늘리기
+          if (idx % cols === 0) {
+            const newRowCount = Math.floor(idx / cols) + 1;
+            container.style.height = `${newRowCount * cellSize}px`;
+          }
           const img = document.createElement('img');
           img.src = allImages[idx % allImages.length];
           idx++;
-          img.style.cssText = `width:${cellW}px;height:${cellH}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
+          img.style.cssText = `width:${cellSize}px;height:${cellSize}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
           container.appendChild(img);
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
