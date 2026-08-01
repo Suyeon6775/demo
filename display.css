@@ -246,18 +246,18 @@ body {
 }
 
 /* 원본(가운데) 패널 — 사이드 패널과 동일한 3행 구조로 이미지 상단 맞춤 */
-/* .panel-original {
+.panel-original {
   display: grid;
   grid-template-rows: clamp(44px, 5vh, 72px) clamp(80px, 11vh, 140px) 1fr;
   padding: 40px 16px 0;
-} */
+}
 
-/* .panel-original .panel-label {
+.panel-original .panel-label {
   font-family: Helvetica, Arial, sans-serif;
   font-size: clamp(10px, 0.85vw, 13px);
   letter-spacing: 0.25em;
   color: #999;
-} */
+}
 
 .original-img-wrap {
   grid-row: 3; /* 텍스트 행 건너뛰고 이미지 행에 배치 */
