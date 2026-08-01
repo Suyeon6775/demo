@@ -37,12 +37,6 @@
       <canvas id="scan-canvas"></canvas>
     </div>
 
-    <!-- ORIGINAL REVEAL -->
-    <div id="original-reveal" class="hidden">
-      <span class="reveal-label">원본</span>
-      <img id="original-img" src="" alt="원본" />
-    </div>
-
     <!-- RESULT -->
     <div id="screen-result" class="hidden">
       <!-- 상단 헤더 -->
@@ -52,7 +46,6 @@
           class="result-title-img"
           alt="Paradox of Translation"
         />
-        <!-- <span class="result-scan-num" id="result-scan-num"></span> -->
       </div>
 
       <!-- 3패널 -->
@@ -187,7 +180,6 @@
       const screens = {
         idle: document.getElementById('screen-idle'),
         scanning: document.getElementById('screen-scanning'),
-        reveal: document.getElementById('original-reveal'),
         result: document.getElementById('screen-result'),
         archive: document.getElementById('screen-archive'),
       };
@@ -198,15 +190,9 @@
         });
       }
 
-      let revealTimer = null;
       let lastSpokenScanId = null;
 
       socket.on('state', (state) => {
-        if (revealTimer) {
-          clearTimeout(revealTimer);
-          revealTimer = null;
-        }
-
         if (state.mode === 'archive') {
           showOnly('archive');
           renderArchiveGrid(state.scans);
@@ -219,18 +205,7 @@
           window._currentScans = state.scans;
           document.getElementById('depth-indicator').classList.add('hidden');
         } else if (state.mode === 'scanning') {
-          if (state.currentScan?.originalDataUrl && state.depthLevel === 0) {
-            document.getElementById('original-img').src =
-              state.currentScan.originalDataUrl;
-            showOnly('reveal');
-            revealTimer = setTimeout(() => {
-              showOnly('scanning');
-              startScanAnim();
-            }, 3000);
-          } else {
-            showOnly('scanning');
-            startScanAnim();
-          }
+          showOnly('scanning');
         } else if (state.mode === 'result') {
           const scan = state.currentScan;
           if (!scan) return;
@@ -245,7 +220,6 @@
           if (current.imageB)
             document.getElementById('img-b').src = current.imageB;
 
-          // 원본 이미지
           if (scan.originalDataUrl)
             document.getElementById('original-scan-img').src =
               scan.originalDataUrl;
@@ -270,6 +244,12 @@
             speak(current.textA, current.textB);
           }
         }
+      });
+
+      // ── scanStarted: 방금 찍은 사진을 즉시 중앙에 표시 ──────
+      socket.on('scanStarted', ({ originalDataUrl }) => {
+        showOnly('scanning');
+        startScanAnim(originalDataUrl);
       });
 
       // ── 스크린리더 ────────────────────────────────────────────
@@ -312,7 +292,7 @@
       }
       loadSavedImages();
 
-      function startScanAnim() {
+      function startScanAnim(currentScanUrl) {
         const scanning = document.getElementById('screen-scanning');
         const oldEl = document.getElementById('stack-container');
         if (oldEl) oldEl.remove();
@@ -322,30 +302,49 @@
         const cellW = Math.ceil(window.innerWidth / cols);
         const cellH = Math.ceil(window.innerHeight / rows);
         const total = cols * rows;
+        const centerIdx = Math.floor(rows / 2) * cols + Math.floor(cols / 2);
 
         const container = document.createElement('div');
         container.id = 'stack-container';
         container.style.cssText = `position:absolute;top:0;left:0;width:${cols * cellW}px;height:${rows * cellH}px;display:grid;grid-template-columns:repeat(${cols},${cellW}px);grid-template-rows:repeat(${rows},${cellH}px);pointer-events:none`;
         scanning.appendChild(container);
 
-        const newScans = (window._currentScans || [])
-          .map((s) => s.originalDataUrl || s.imageA)
-          .filter(Boolean);
-        const shuffled = savedImageUrls.slice().sort(() => Math.random() - 0.5);
-        const allImages = newScans.concat(shuffled);
+        // 모든 셀 미리 생성
+        const cells = Array.from({ length: total }, () => {
+          const div = document.createElement('div');
+          div.style.cssText = `width:${cellW}px;height:${cellH}px;overflow:hidden;`;
+          container.appendChild(div);
+          return div;
+        });
 
+        // 지금 찍은 사진을 중앙 셀에 즉시 표시
+        if (currentScanUrl) {
+          const centerImg = document.createElement('img');
+          centerImg.src = currentScanUrl;
+          centerImg.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;`;
+          cells[centerIdx].appendChild(centerImg);
+        }
+
+        // 나머지 셀을 Cloudinary 이미지로 플립 채우기
+        const shuffled = savedImageUrls.slice().sort(() => Math.random() - 0.5);
+        if (shuffled.length === 0) return;
+
+        const remaining = Array.from({ length: total }, (_, i) => i).filter(
+          (i) => i !== centerIdx,
+        );
         let idx = 0;
+
         function addNext() {
-          if (idx >= total || allImages.length === 0) {
+          if (idx >= remaining.length) {
             clearInterval(stackInterval);
             stackInterval = null;
             return;
           }
           const img = document.createElement('img');
-          img.src = allImages[idx % allImages.length];
+          img.src = shuffled[idx % shuffled.length];
+          img.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
+          cells[remaining[idx]].appendChild(img);
           idx++;
-          img.style.cssText = `width:${cellW}px;height:${cellH}px;object-fit:cover;display:block;transform:perspective(600px) rotateY(90deg);transition:transform 0.45s ease`;
-          container.appendChild(img);
           requestAnimationFrame(() =>
             requestAnimationFrame(() => {
               img.style.transform = 'perspective(600px) rotateY(0deg)';
