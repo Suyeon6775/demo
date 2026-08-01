@@ -168,13 +168,15 @@ body {
 
 /* ▼ 변경1: LITERAL 패널 — image 상단, label/text 하단 중앙정렬 */
 .panel-a {
-  display: grid;
-  grid-template-rows: 1fr auto auto;
+  display: flex;
+  flex-direction: column;
   padding: 40px 36px 0;
 }
 
 .panel-a .panel-img-wrap {
-  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  flex-shrink: 0;
 }
 
 .panel-a .panel-label {
@@ -207,13 +209,15 @@ body {
 
 /* ▼ 변경1: POETIC 패널 — image 상단, label/text 하단 중앙정렬 */
 .panel-b {
-  display: grid;
-  grid-template-rows: 1fr auto auto;
+  display: flex;
+  flex-direction: column;
   padding: 40px 36px 0;
 }
 
 .panel-b .panel-img-wrap {
-  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 1;
+  flex-shrink: 0;
 }
 
 .panel-b .panel-label {
